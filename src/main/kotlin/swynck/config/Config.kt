@@ -8,4 +8,12 @@ interface Config {
     companion object {
         operator fun invoke() = Envy.configure(Config::class.java) as Config
     }
+
+    @Default("9000")
+    @Name("PORT")
+    fun port(): Int
+
+    @Default("jdbc:h2:~/.config/swynck")
+    @Name("DB")
+    fun db(): String
 }

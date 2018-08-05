@@ -1,11 +1,12 @@
 package swynck.db
 
 import org.flywaydb.core.Flyway
+import swynck.config.Config
 
-class Migrations {
+class Migrations(private val config: Config) {
     fun run() {
         val flyway = Flyway()
-        flyway.setDataSource("jdbc:h2:~/.config/swynck", "sa", "")
+        flyway.setDataSource(config.db(), "sa", "")
         flyway.migrate()
     }
 }

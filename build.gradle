@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile "com.statemachinesystems:envy:1.9"
+    compile "com.statemachinesystems:envy:1.8"
     compile "org.flywaydb:flyway-core:5.1.4"
     compile "com.h2database:h2:1.4.197"
     compile "org.http4k:http4k-contract:3.32.1"

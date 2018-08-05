@@ -11,21 +11,22 @@ import org.http4k.core.Request
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
-import java.net.ServerSocket
+import swynck.config.Config
+import swynck.test.utils.TestConfig
 
 class RunTests {
     companion object {
         private lateinit var server: Deferred<*>
         private lateinit var client: OkHttp
-        private var webport: Int = 0
+        private lateinit var config: Config
 
         @JvmStatic
         @BeforeClass
         fun initClass() {
-            webport = ServerSocket(0).use { it.localPort }
+            config = TestConfig()
             server = async {
                 try {
-                    Run(webport)
+                    Run(config)
                 } catch (e: Exception) {
                     println(e)
                     throw e
@@ -34,7 +35,7 @@ class RunTests {
             client = OkHttp()
             var attempts = 10
             while(true) {
-                val response = client(Request(GET, "http://localhost:$webport/ping"))
+                val response = client(Request(GET, "http://localhost:${config.port()}/ping"))
                 if (response.status.successful) return
                 Thread.sleep(100)
                 attempts--
@@ -51,7 +52,7 @@ class RunTests {
 
     @Test
     fun `dummy test`() {
-        val response = client(Request(GET, "http://localhost:$webport/ping"))
+        val response = client(Request(GET, "http://localhost:${config.port()}/ping"))
 
         assertThat(response.bodyString()).isEqualTo("pong")
     }
