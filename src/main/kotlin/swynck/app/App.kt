@@ -18,6 +18,7 @@ object App {
     }}
     operator fun invoke() = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
+        "/api" bind Api(),
         static(Classpath("www")),
         rewriteUriToSlash.then(static(Classpath("www")))
     )
