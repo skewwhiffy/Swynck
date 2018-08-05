@@ -1,14 +1,11 @@
-package swynck.app
+package swynck.db
 
-import org.assertj.core.api.Assertions.assertThat
-import org.http4k.core.Method.GET
-import org.http4k.core.Request
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
 import swynck.test.utils.StartServerForTesting
 
-class RunTests {
+class MigrationsTests {
     companion object {
         private lateinit var server: StartServerForTesting
 
@@ -26,9 +23,10 @@ class RunTests {
     }
 
     @Test
-    fun `ping endpoint works`() {
-        val response = server.client(Request(GET, "http://localhost:${server.config.port()}/ping"))
-
-        assertThat(response.bodyString()).isEqualTo("pong")
+    fun `user table exists`() {
+        server.dataSourceFactory.dataSource().getConnection()!!.use {
+            val resultSet = it.createStatement().executeQuery("show tables")
+            println(resultSet)
+        }
     }
 }
