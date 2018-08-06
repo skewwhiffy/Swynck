@@ -1,5 +1,6 @@
 package swynck.db
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
@@ -24,9 +25,16 @@ class MigrationsTests {
 
     @Test
     fun `user table exists`() {
-        server.dataSourceFactory.dataSource().getConnection()!!.use {
-            val resultSet = it.createStatement().executeQuery("show tables")
-            println(resultSet)
+        server.dataSourceFactory.sql2o().use { connection ->
+            val tables = connection.createQuery("show tables").executeAndFetch(Table::class.java)
+
+            val candidates = tables.filter { it.table_name.toLowerCase() == "users" }
+            assertThat(candidates).isNotEmpty
         }
     }
+
+    data class Table(
+        val table_name: String,
+        val table_schema: String
+    )
 }

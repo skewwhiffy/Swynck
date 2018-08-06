@@ -8,10 +8,11 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import swynck.app.Run
 import swynck.config.Config
+import swynck.db.DataSourceFactory
 
 class StartServerForTesting : AutoCloseable {
     val config: Config = TestConfig()
-    val dataSourceFactory = SingletonDataSourceFactory(config)
+    val dataSourceFactory = DataSourceFactory(config)
     private val server = async {
         try {
             Run(config, dataSourceFactory)

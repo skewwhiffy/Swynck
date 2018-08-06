@@ -15,7 +15,7 @@ object Run {
         println("Applying migrations")
         Migrations(dataSourceFactory).run()
         println("Starting server on port ${config.port()}")
-        App().asServer(Undertow(config.port())).start()
+        App(dataSourceFactory).asServer(Undertow(config.port())).start()
         println("Server started")
     }
 }

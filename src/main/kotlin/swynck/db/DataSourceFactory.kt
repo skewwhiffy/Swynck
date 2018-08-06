@@ -9,5 +9,5 @@ open class DataSourceFactory(private val config: Config) {
     open fun dataSource() = JdbcDataSource()
         .apply { setUrl(config.db()) }
 
-    fun sql2o() = sql2o
+    open fun sql2o() = sql2o.open()
 }

@@ -11,20 +11,30 @@ import org.http4k.core.then
 import org.http4k.filter.CorsPolicy
 import org.http4k.filter.ServerFilters.Cors
 import org.http4k.routing.ResourceLoader.Companion.Classpath
+import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.static
+import swynck.db.DataSourceFactory
+import swynck.db.UserRepository
 
 object App {
     private val rewriteUriToSlash = Filter { next: HttpHandler -> {
         it: Request -> next(it.uri(it.uri.path("/")))
     }}
-    operator fun invoke() = CorsPolicy(listOf("*"), listOf(), Method.values().toList())
-        .let { Cors(it) }
-        .then(routes(
-        "/ping" bind GET to { Response(OK).body("pong") },
-        "/api" bind Api(),
-        static(Classpath("www")),
-        rewriteUriToSlash.then(static(Classpath("www")))
-    ))
+    operator fun invoke(dataSourceFactory: DataSourceFactory): RoutingHttpHandler {
+        val userRepository = UserRepository(dataSourceFactory)
+        return CorsPolicy(
+            listOf("*"),
+            listOf(),
+            Method.values().toList()
+        )
+            .let { Cors(it) }
+            .then(routes(
+                "/ping" bind GET to { Response(OK).body("pong") },
+                "/api" bind Api(userRepository),
+                static(Classpath("www")),
+                rewriteUriToSlash.then(static(Classpath("www")))
+            ))
+    }
 }
