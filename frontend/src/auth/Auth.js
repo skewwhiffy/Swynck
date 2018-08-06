@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Api from '../service/Api';
+import {Redirect} from "react-router";
 
 export default class Auth extends Component {
   api = new Api();
@@ -12,7 +13,16 @@ export default class Auth extends Component {
   }
 
   componentDidMount() {
-    this.api.getCurrentUser().then(it => console.log(it));
+    this
+      .api
+      .getCurrentUser()
+      .then(it => {
+        if (it.redirect) {
+          window.location.replace(it.redirect);
+          return
+        }
+        throw Error("Not implemented yet")
+      })
   }
 
 

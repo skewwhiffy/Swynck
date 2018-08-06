@@ -6,6 +6,10 @@ export default class Api {
   logger = new Logger();
   baseUrl = Config.baseUrl || "/";
 
+  constructor() {
+    this.handleNotOk = this.handleNotOk.bind(this);
+  }
+
   getRequestUrl(relative) {
     return urlJoin(this.baseUrl, relative);
   }

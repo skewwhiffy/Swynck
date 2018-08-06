@@ -25,10 +25,12 @@ class ApiTests {
     }
 
     @Test
-    fun `current user endpoint returns null when not logged in`() {
+    fun `current user endpoint returns redirect object when not logged in`() {
         val response = api(Request(GET, "/user/me"))
 
-        assertThat(response.status).isEqualTo(NOT_FOUND)
+        assertThat(response.status).isEqualTo(OK)
+        val notFoundResponse = UserNotFound.lens(response)
+        // TODO: Assert redirect URL is correct
     }
 
     @Test
