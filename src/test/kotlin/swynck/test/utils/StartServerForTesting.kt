@@ -6,16 +6,14 @@ import kotlinx.coroutines.experimental.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
+import swynck.app.Dependencies
 import swynck.app.Run
-import swynck.config.Config
-import swynck.db.DataSourceFactory
 
 class StartServerForTesting : AutoCloseable {
-    val config: Config = TestConfig()
-    val dataSourceFactory = DataSourceFactory(config)
+    val dependencies = Dependencies(TestConfig())
     private val server = async {
         try {
-            Run(config, dataSourceFactory)
+            Run(dependencies)
         } catch (e: Exception) {
             println(e)
             throw e
@@ -26,7 +24,7 @@ class StartServerForTesting : AutoCloseable {
     init {
         var attempts = 10
         while(true) {
-            val response = client(Request(GET, "http://localhost:${config.port()}/ping"))
+            val response = client(Request(GET, "http://localhost:${dependencies.config.port()}/ping"))
             if (response.status.successful) break
             Thread.sleep(100)
             attempts--

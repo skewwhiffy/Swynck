@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Api from '../service/Api';
-import {Redirect} from "react-router";
 
 export default class Auth extends Component {
   api = new Api();

@@ -8,21 +8,28 @@ import org.http4k.routing.bind
 import org.http4k.routing.routes
 import swynck.config.Json.auto
 import swynck.db.UserRepository
+import swynck.service.Onedrive
 import java.net.URI
 
 object Api {
-    operator fun invoke(userRepository: UserRepository) = routes(
+    operator fun invoke(
+        userRepository: UserRepository,
+        oneDrive: Onedrive
+    ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
-        "/user/me" bind GET to { GetCurrentUser(userRepository) }
+        "/user/me" bind GET to { GetCurrentUser(userRepository, oneDrive) }
     )
 }
 
 object GetCurrentUser {
-    operator fun invoke(userRepository: UserRepository) = userRepository
+    operator fun invoke(
+        userRepository: UserRepository,
+        oneDrive: Onedrive
+    ) = userRepository
         .getUser()
         .let {
             when (it) {
-                null -> Response(OK).withBody(UserNotFound(URI("http://www.todo.com")))
+                null -> Response(OK).withBody(UserNotFound(oneDrive.authenticationUrl()))
                 else -> Response(OK).withBody(User(it.name))
             }
         }

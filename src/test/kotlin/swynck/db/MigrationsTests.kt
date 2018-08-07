@@ -25,7 +25,7 @@ class MigrationsTests {
 
     @Test
     fun `user table exists`() {
-        server.dataSourceFactory.sql2o().use { connection ->
+        server.dependencies.dataSourceFactory.sql2o().use { connection ->
             val tables = connection.createQuery("show tables").executeAndFetch(Table::class.java)
 
             val candidates = tables.filter { it.table_name.toLowerCase() == "users" }

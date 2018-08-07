@@ -15,15 +15,17 @@ import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.static
-import swynck.db.DataSourceFactory
 import swynck.db.UserRepository
+import swynck.service.Onedrive
 
 object App {
     private val rewriteUriToSlash = Filter { next: HttpHandler -> {
         it: Request -> next(it.uri(it.uri.path("/")))
     }}
-    operator fun invoke(dataSourceFactory: DataSourceFactory): RoutingHttpHandler {
-        val userRepository = UserRepository(dataSourceFactory)
+    operator fun invoke(
+        userRepository: UserRepository,
+        oneDrive: Onedrive
+    ): RoutingHttpHandler {
         return CorsPolicy(
             listOf("*"),
             listOf(),
@@ -32,7 +34,7 @@ object App {
             .let { Cors(it) }
             .then(routes(
                 "/ping" bind GET to { Response(OK).body("pong") },
-                "/api" bind Api(userRepository),
+                "/api" bind Api(userRepository, oneDrive),
                 static(Classpath("www")),
                 rewriteUriToSlash.then(static(Classpath("www")))
             ))
