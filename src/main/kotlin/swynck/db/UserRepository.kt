@@ -8,6 +8,19 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
         if (users.size > 1) throw NotImplementedError("Multiple logged in users")
         return users.singleOrNull()
     }
+
+    fun addUser(name: String, refreshToken: String) {
+        if (getUser() != null) throw NotImplementedError("Multiple users")
+        dataSourceFactory.sql2o().use {
+            it.createQuery("""
+                INSERT INTO users (name, refreshToken)
+                VALUES (:name, :refreshToken)
+            """.trimIndent())
+                .addParameter("name", name)
+                .addParameter("refreshToken", refreshToken)
+                .executeUpdate()
+        }
+    }
 }
 
 data class User(

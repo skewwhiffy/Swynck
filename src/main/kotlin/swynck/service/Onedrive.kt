@@ -5,6 +5,7 @@ import swynck.config.canAuthenticateOnedrive
 import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
+import java.time.ZonedDateTime
 
 open class Onedrive(private val config: Config) {
     companion object {
@@ -29,7 +30,28 @@ open class Onedrive(private val config: Config) {
             .let { URI("https://login.live.com/oauth20_authorize.srf?$it") }
     }
 
-    open fun getRefreshToken(authToken: String): String {
+    open fun getAccessToken(authCode: String): AccessToken {
         TODO()
+        /*
+        var queryVariables = new Dictionary<string, string>
+        {
+            {"client_id", ClientId},
+            {"redirect_uri", Callback},
+            {"client_secret", ClientSecret}
+        };
+        var authToken = await GetAuthorizationCodeAsync(ct);
+        queryVariables["grant_type"] = "authorization_code";
+        queryVariables["code"] = authToken;
+        var content = new FormUrlEncodedContent(queryVariables);
+        var response = await client.PostAsync("https://login.live.com/oauth20_token.srf", content, ct);
+        var payload = await response.Content.ReadAsStringAsync();
+        token = RefreshTokenDetails.FromTokenResponse(payload);
+        */
     }
 }
+
+data class AccessToken(
+    val refresh_token: String,
+    val access_token: String,
+    val expires_in: Int
+)

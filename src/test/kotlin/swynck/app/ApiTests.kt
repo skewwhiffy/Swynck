@@ -6,30 +6,39 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
+import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Before
 import org.junit.Test
 import swynck.db.Migrations
+import swynck.service.AccessToken
 import swynck.service.Onedrive
 import swynck.test.utils.TestConfig
 import java.util.*
 
 class OnedriveCallbackTests {
     @Test
-    fun `onedrive callback requests refresh token`() {
+    fun `onedrive callback populates refresh token`() {
         val dependencies = Dependencies(TestConfig())
-        val authToken = "${UUID.randomUUID()}"
-        val refreshToken = "${UUID.randomUUID()}"
+        Migrations(dependencies.dataSourceFactory).run()
+        val authCode = "${UUID.randomUUID()}"
+        val accessToken = AccessToken(
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}",
+            5
+        )
         val onedrive = mockk<Onedrive>()
         val api = Api(dependencies.userRepository, onedrive)
-        every { onedrive.getRefreshToken(authToken) } returns refreshToken
+        every { onedrive.getAccessToken(authCode) } returns accessToken
 
-        val response = api(Request(GET, "/onedrive?code=$authToken"))
+        val response = api(Request(GET, "/onedrive?code=$authCode"))
 
-        verify { onedrive.getRefreshToken(authToken) }
-        // TODO: puts refresh token in DB
-        // TODO: redirects to root
+        verify { onedrive.getAccessToken(authCode) }
+        val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
+        assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
+        // TODO: puts name in DB
+        assertThat(response.status).isEqualTo(MOVED_PERMANENTLY)
     }
 }
 
@@ -59,7 +68,7 @@ class CurrentUserTests {
     fun `current user endpoint returns current user name`() {
         dependencies.dataSourceFactory.dataSource().connection!!.use {
             it.createStatement().execute("""
-                insert into public.users (name, refreshToken) values ('the_name', 'the_token')
+                insert into users (name, refreshToken) values ('the_name', 'the_token')
             """.trimIndent())
         }
 

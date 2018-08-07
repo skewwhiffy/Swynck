@@ -4,6 +4,7 @@ import org.http4k.core.Body
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -19,15 +20,20 @@ object Api {
     ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
         "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
-        "/onedrive" bind GET to { OnedriveCallback(onedrive, it) }
+        "/onedrive" bind GET to { OnedriveCallback(onedrive, userRepository, it) }
     )
 }
 
 object OnedriveCallback {
-    operator fun invoke(onedrive: Onedrive, request: Request): Response {
+    operator fun invoke(
+        onedrive: Onedrive,
+        userRepository: UserRepository,
+        request: Request
+    ): Response {
         val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
-        val refreshToken = onedrive.getRefreshToken(code)
-        return Response(OK).body("woohoohoo")
+        val accessToken = onedrive.getAccessToken(code)
+        userRepository.addUser("Dummy name", accessToken.refresh_token)
+        return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
     }
 }
 
