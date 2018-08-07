@@ -2,6 +2,7 @@ package swynck.app
 
 import org.http4k.core.Body
 import org.http4k.core.Method.GET
+import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
@@ -14,12 +15,20 @@ import java.net.URI
 object Api {
     operator fun invoke(
         userRepository: UserRepository,
-        oneDrive: Onedrive
+        onedrive: Onedrive
     ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
-        "/user/me" bind GET to { GetCurrentUser(userRepository, oneDrive) },
-        "/onedrive" bind GET to { Response(OK).body("timey-wimey") }
+        "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
+        "/onedrive" bind GET to { OnedriveCallback(onedrive, it) }
     )
+}
+
+object OnedriveCallback {
+    operator fun invoke(onedrive: Onedrive, request: Request): Response {
+        val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
+        val refreshToken = onedrive.getRefreshToken(code)
+        return Response(OK).body("woohoohoo")
+    }
 }
 
 object GetCurrentUser {

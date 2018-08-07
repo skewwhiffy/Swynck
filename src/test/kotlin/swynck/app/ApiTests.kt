@@ -1,5 +1,6 @@
 package swynck.app
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -19,8 +20,10 @@ class OnedriveCallbackTests {
     fun `onedrive callback requests refresh token`() {
         val dependencies = Dependencies(TestConfig())
         val authToken = "${UUID.randomUUID()}"
+        val refreshToken = "${UUID.randomUUID()}"
         val onedrive = mockk<Onedrive>()
         val api = Api(dependencies.userRepository, onedrive)
+        every { onedrive.getRefreshToken(authToken) } returns refreshToken
 
         val response = api(Request(GET, "/onedrive?code=$authToken"))
 
