@@ -1,11 +1,19 @@
 package swynck.service
 
+import swynck.config.Json.auto
+import org.http4k.client.OkHttp
+import org.http4k.core.Body
+import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.nuxeo.onedrive.client.OneDriveAPI
+import org.nuxeo.onedrive.client.OneDriveBasicAPI
+import org.nuxeo.onedrive.client.OneDriveEmailAccount
 import swynck.config.Config
 import swynck.config.canAuthenticateOnedrive
 import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
-import java.time.ZonedDateTime
 
 open class Onedrive(private val config: Config) {
     companion object {
@@ -15,13 +23,15 @@ open class Onedrive(private val config: Config) {
         private val scopes = setOf("files.readwrite", "offline_access")
     }
 
+    private val redirectUrl = "http://localhost:${config.port()}/api/onedrive/"
+
     fun authenticationUrl(): URI {
         return if (!config.canAuthenticateOnedrive()) {
             throw PortUnreachableException("Authentication only supported when running on the following ports: ${callbackPorts.joinToString()}")
         } else mapOf(
             "client_id" to clientId,
             "scope" to scopes.joinToString(" "),
-            "redirect_url" to "http://localhost:${config.port()}/api/onedrive",
+            "redirect_url" to redirectUrl,
             "response_type" to "code"
         )
             .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
@@ -31,27 +41,37 @@ open class Onedrive(private val config: Config) {
     }
 
     open fun getAccessToken(authCode: String): AccessToken {
-        TODO()
-        /*
-        var queryVariables = new Dictionary<string, string>
-        {
-            {"client_id", ClientId},
-            {"redirect_uri", Callback},
-            {"client_secret", ClientSecret}
-        };
-        var authToken = await GetAuthorizationCodeAsync(ct);
-        queryVariables["grant_type"] = "authorization_code";
-        queryVariables["code"] = authToken;
-        var content = new FormUrlEncodedContent(queryVariables);
-        var response = await client.PostAsync("https://login.live.com/oauth20_token.srf", content, ct);
-        var payload = await response.Content.ReadAsStringAsync();
-        token = RefreshTokenDetails.FromTokenResponse(payload);
-        */
+        val request = mapOf(
+            "client_id" to clientId,
+            "redirect_uri" to redirectUrl,
+            "client_secret" to clientSecret,
+            "grant_type" to "authorization_code",
+            "code" to authCode
+        )
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
+        val client = OkHttp()
+        val response = client(request)
+        return AccessToken(response)
     }
+
+    open fun getEmail(accessToken: AccessToken): String {
+        return OneDriveEmailAccount.getCurrentUserEmailAccount(accessToken.api())
+    }
+
+    private fun AccessToken.api(): OneDriveAPI = OneDriveBasicAPI(this.access_token)
 }
 
 data class AccessToken(
     val refresh_token: String,
     val access_token: String,
     val expires_in: Int
-)
+) {
+    companion object {
+        private val lens = Body.auto<AccessToken>().toLens()
+        operator fun invoke(response: Response) = lens(response)
+    }
+}

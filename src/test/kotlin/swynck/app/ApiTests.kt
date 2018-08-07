@@ -28,16 +28,18 @@ class OnedriveCallbackTests {
             "${UUID.randomUUID()}",
             5
         )
+        val email = "${UUID.randomUUID()}@test.com"
         val onedrive = mockk<Onedrive>()
         val api = Api(dependencies.userRepository, onedrive)
         every { onedrive.getAccessToken(authCode) } returns accessToken
+        every { onedrive.getEmail(accessToken) } returns email
 
         val response = api(Request(GET, "/onedrive?code=$authCode"))
 
         verify { onedrive.getAccessToken(authCode) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
         assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
-        // TODO: puts name in DB
+        assertThat(user.email).isEqualTo(email)
         assertThat(response.status).isEqualTo(MOVED_PERMANENTLY)
     }
 }
@@ -68,7 +70,7 @@ class CurrentUserTests {
     fun `current user endpoint returns current user name`() {
         dependencies.dataSourceFactory.dataSource().connection!!.use {
             it.createStatement().execute("""
-                insert into users (name, refreshToken) values ('the_name', 'the_token')
+                insert into users (email, refreshToken) values ('the_email', 'the_token')
             """.trimIndent())
         }
 
@@ -76,7 +78,7 @@ class CurrentUserTests {
 
         assertThat(response.status).isEqualTo(OK)
         val user = User.lens(response)
-        assertThat(user.name).isEqualTo("the_name")
+        assertThat(user.email).isEqualTo("the_email")
     }
 
 

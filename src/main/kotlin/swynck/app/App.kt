@@ -35,8 +35,8 @@ object App {
             .then(routes(
                 "/ping" bind GET to { Response(OK).body("pong") },
                 "/api" bind Api(userRepository, oneDrive),
-                static(Classpath("www")),
-                rewriteUriToSlash.then(static(Classpath("www")))
+                static(Classpath("www"))
+                //rewriteUriToSlash.then(static(Classpath("www")))
             ))
     }
 }

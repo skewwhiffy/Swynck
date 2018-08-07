@@ -9,14 +9,14 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
         return users.singleOrNull()
     }
 
-    fun addUser(name: String, refreshToken: String) {
+    fun addUser(email: String, refreshToken: String) {
         if (getUser() != null) throw NotImplementedError("Multiple users")
         dataSourceFactory.sql2o().use {
             it.createQuery("""
-                INSERT INTO users (name, refreshToken)
-                VALUES (:name, :refreshToken)
+                INSERT INTO users (email, refreshToken)
+                VALUES (:email, :refreshToken)
             """.trimIndent())
-                .addParameter("name", name)
+                .addParameter("email", email)
                 .addParameter("refreshToken", refreshToken)
                 .executeUpdate()
         }
@@ -24,6 +24,6 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
 }
 
 data class User(
-    val name: String,
+    val email: String,
     val refreshToken: String
 )

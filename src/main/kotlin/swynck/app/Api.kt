@@ -4,7 +4,6 @@ import org.http4k.core.Body
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
-import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -30,10 +29,16 @@ object OnedriveCallback {
         userRepository: UserRepository,
         request: Request
     ): Response {
-        val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
-        val accessToken = onedrive.getAccessToken(code)
-        userRepository.addUser("Dummy name", accessToken.refresh_token)
-        return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
+        try {
+            val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
+            val accessToken = onedrive.getAccessToken(code)
+            val email = onedrive.getEmail(accessToken)
+            userRepository.addUser(email, accessToken.refresh_token)
+        } catch (e: Throwable) {
+            return Response(OK).body(e.message ?: e.toString())
+        }
+        return Response(OK).body("Done")
+        // return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
     }
 }
 
@@ -46,7 +51,7 @@ object GetCurrentUser {
         .let {
             when (it) {
                 null -> Response(OK).withBody(UserNotFound(oneDrive.authenticationUrl()))
-                else -> Response(OK).withBody(User(it.name))
+                else -> Response(OK).withBody(User(it.email))
             }
         }
 }
@@ -54,7 +59,7 @@ object GetCurrentUser {
 abstract class UserResponse
 
 data class User(
-    val name: String
+    val email: String
 ) : UserResponse() {
     companion object {
         val lens = Body.auto<User>().toLens()
