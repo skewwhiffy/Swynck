@@ -17,6 +17,7 @@ export default class Auth extends Component {
       .getCurrentUser()
       .then(it => {
         if (it.redirect) {
+          debugger;
           window.location.replace(it.redirect);
           return
         }

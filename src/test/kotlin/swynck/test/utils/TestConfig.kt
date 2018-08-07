@@ -5,8 +5,8 @@ import java.net.ServerSocket
 import java.util.*
 
 class TestConfig : Config {
-    private val port = ServerSocket(0).use { it.localPort }
     private val dbName = "${UUID.randomUUID()}"
+    var port = ServerSocket(0).use { it.localPort }
 
     override fun port() = port
 

@@ -11,23 +11,26 @@ import swynck.db.Migrations
 import swynck.test.utils.TestConfig
 
 class ApiTests {
+    private lateinit var config: TestConfig
     private lateinit var dependencies: Dependencies
     private lateinit var api: RoutingHttpHandler
 
     @Before
     fun init() {
-        dependencies = Dependencies(TestConfig())
+        config = TestConfig()
+        dependencies = Dependencies(config)
         Migrations(dependencies.dataSourceFactory).run()
         api = Api(dependencies.userRepository, dependencies.oneDrive)
     }
 
     @Test
     fun `current user endpoint returns redirect object when not logged in`() {
+        config.port = 80
         val response = api(Request(GET, "/user/me"))
 
         assertThat(response.status).isEqualTo(OK)
         val notFoundResponse = UserNotFound.lens(response)
-        // TODO: Assert redirect URL is correct
+        assertThat(notFoundResponse.redirect.toString()).contains("live.com")
     }
 
     @Test

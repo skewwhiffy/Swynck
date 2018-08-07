@@ -4,10 +4,10 @@ cp src/config/Config.js originalConfig.js
 echo Munging config for embeddification...
 case "$(uname -s)" in
     Darwin)
-        sed -i '' -e 's/http:\/\/localhost:9000//' src/config/Config.js
+        sed -i '' -e 's/http:\/\/localhost:38080//' src/config/Config.js
         ;;
     *)
-        sed -i -e 's/http:\/\/localhost:9000//' src/config/Config.js
+        sed -i -e 's/http:\/\/localhost:38080//' src/config/Config.js
         ;;
 esac
 echo Installing dependencies...

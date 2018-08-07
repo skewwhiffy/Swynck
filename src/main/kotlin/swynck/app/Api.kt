@@ -17,7 +17,8 @@ object Api {
         oneDrive: Onedrive
     ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
-        "/user/me" bind GET to { GetCurrentUser(userRepository, oneDrive) }
+        "/user/me" bind GET to { GetCurrentUser(userRepository, oneDrive) },
+        "/onedrive" bind GET to { Response(OK).body("timey-wimey") }
     )
 }
 
