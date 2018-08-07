@@ -1,5 +1,7 @@
 package swynck.app
 
+import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
@@ -8,9 +10,27 @@ import org.http4k.routing.RoutingHttpHandler
 import org.junit.Before
 import org.junit.Test
 import swynck.db.Migrations
+import swynck.service.Onedrive
 import swynck.test.utils.TestConfig
+import java.util.*
 
-class ApiTests {
+class OnedriveCallbackTests {
+    @Test
+    fun `onedrive callback requests refresh token`() {
+        val dependencies = Dependencies(TestConfig())
+        val authToken = "${UUID.randomUUID()}"
+        val onedrive = mockk<Onedrive>()
+        val api = Api(dependencies.userRepository, onedrive)
+
+        val response = api(Request(GET, "/onedrive?code=$authToken"))
+
+        verify { onedrive.getRefreshToken(authToken) }
+        // TODO: puts refresh token in DB
+        // TODO: redirects to root
+    }
+}
+
+class CurrentUserTests {
     private lateinit var config: TestConfig
     private lateinit var dependencies: Dependencies
     private lateinit var api: RoutingHttpHandler
@@ -22,7 +42,6 @@ class ApiTests {
         Migrations(dependencies.dataSourceFactory).run()
         api = Api(dependencies.userRepository, dependencies.oneDrive)
     }
-
     @Test
     fun `current user endpoint returns redirect object when not logged in`() {
         config.port = 80
@@ -47,4 +66,7 @@ class ApiTests {
         val user = User.lens(response)
         assertThat(user.name).isEqualTo("the_name")
     }
+
+
 }
+

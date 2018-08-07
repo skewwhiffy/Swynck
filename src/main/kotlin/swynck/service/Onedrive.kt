@@ -6,7 +6,7 @@ import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
 
-class Onedrive(private val config: Config) {
+open class Onedrive(private val config: Config) {
     companion object {
         private val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
         private val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
@@ -27,5 +27,9 @@ class Onedrive(private val config: Config) {
             .map { "${it.key}=${it.value}" }
             .joinToString("&")
             .let { URI("https://login.live.com/oauth20_authorize.srf?$it") }
+    }
+
+    open fun getRefreshToken(authToken: String): String {
+        TODO()
     }
 }
