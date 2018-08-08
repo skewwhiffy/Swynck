@@ -23,7 +23,7 @@ open class Onedrive(private val config: Config) {
         private val scopes = setOf("files.readwrite", "offline_access")
     }
 
-    private val redirectUrl = "http://localhost:${config.port()}/api/onedrive/"
+    private val redirectUrl = "http://localhost:${config.port()}"
 
     fun authenticationUrl(): URI {
         return if (!config.canAuthenticateOnedrive()) {

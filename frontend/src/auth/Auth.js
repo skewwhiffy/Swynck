@@ -7,21 +7,38 @@ export default class Auth extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      message: "Woo hoo"
+      loggedIn: false,
+      loginRedirect: false
     }
   }
 
   componentDidMount() {
+    const code = (new URL(window.location)).searchParams.get("code");
+    if (code) {
+      debugger;
+      this
+        .api
+        .setAuthCode(code)
+        .then(_ => window.redirect("/"));
+      return
+    }
+
     this
       .api
       .getCurrentUser()
       .then(it => {
         if (it.redirect) {
-          debugger;
-          window.location.replace(it.redirect);
-          return
+          this.setState({
+            loginRedirect: it.redirect,
+            loggedIn: false
+          })
         }
-        throw Error("Not implemented yet")
+        if (it.email) {
+          this.setState({
+            loggedIn: it.email,
+            loginRedirect: false
+          })
+        }
       })
   }
 
@@ -29,7 +46,14 @@ export default class Auth extends Component {
   render() {
     return (
       <div>
-        <p>{this.state.message}</p>
+        {
+          this.state.loggedIn &&
+          <p>Welcome { this.state.loggedIn }</p>
+        }
+        {
+          this.state.loginRedirect &&
+          <a href={ this.state.loginRedirect }>Login</a>
+        }
       </div>
     )
   }

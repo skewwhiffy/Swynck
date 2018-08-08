@@ -25,4 +25,14 @@ export default class Api {
       .then(this.handleNotOk)
       .then(it => it.json())
   }
+
+  setAuthCode(code) {
+    return fetch(this.getRequestUrl("/api/onedrive/authcode"),
+      {
+        method: "POST",
+        body: JSON.stringify({
+          authCode: code
+        })
+      })
+  }
 }

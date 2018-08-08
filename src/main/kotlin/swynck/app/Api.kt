@@ -4,6 +4,7 @@ import org.http4k.core.Body
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -29,16 +30,11 @@ object OnedriveCallback {
         userRepository: UserRepository,
         request: Request
     ): Response {
-        try {
             val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
             val accessToken = onedrive.getAccessToken(code)
             val email = onedrive.getEmail(accessToken)
             userRepository.addUser(email, accessToken.refresh_token)
-        } catch (e: Throwable) {
-            return Response(OK).body(e.message ?: e.toString())
-        }
-        return Response(OK).body("Done")
-        // return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
+        return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
     }
 }
 

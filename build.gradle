@@ -80,3 +80,4 @@ task buildFrontend(type: Exec) {
 }
 
 build.dependsOn buildFrontend
+run.dependsOn build
