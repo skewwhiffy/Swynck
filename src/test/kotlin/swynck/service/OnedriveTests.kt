@@ -25,7 +25,7 @@ class OnedriveTests {
 
     @Test
     fun `when using supported callback port then authentication URL is returned`() {
-        config.port = 80
+        config.port = 38080
 
         val url = onedrive.authenticationUrl()
 

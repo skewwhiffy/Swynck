@@ -6,20 +6,12 @@ import org.junit.Test
 class ConfigTests {
     @Test
     fun `config allows authentication when port is configured`() {
-        setOf(
-            80,
-            8080,
-            9000,
-            38080
-        )
-            .forEach {
-                val config = object: Config {
-                    override fun port() = it
-                    override fun db() = TODO()
-                }
+        val config = object : Config {
+            override fun port() = 38080
+            override fun db() = TODO()
+        }
 
-                assertThat(config.canAuthenticateOnedrive()).isTrue()
-            }
+        assertThat(config.canAuthenticateOnedrive()).isTrue()
     }
 
     @Test

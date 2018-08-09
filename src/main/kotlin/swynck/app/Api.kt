@@ -2,8 +2,10 @@ package swynck.app
 
 import org.http4k.core.Body
 import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.ACCEPTED
 import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
@@ -20,7 +22,7 @@ object Api {
     ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
         "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
-        "/onedrive" bind GET to { OnedriveCallback(onedrive, userRepository, it) }
+        "/onedrive/authcode" bind POST to { OnedriveCallback(onedrive, userRepository, it) }
     )
 }
 
@@ -30,11 +32,11 @@ object OnedriveCallback {
         userRepository: UserRepository,
         request: Request
     ): Response {
-            val code = request.query("code") ?: throw IllegalArgumentException("No code supplied")
-            val accessToken = onedrive.getAccessToken(code)
-            val email = onedrive.getEmail(accessToken)
-            userRepository.addUser(email, accessToken.refresh_token)
-        return Response(MOVED_PERMANENTLY).header("LOCATION", "/")
+        val requestDeserialized = OnedriveCallbackRequest(request)
+        val accessToken = onedrive.getAccessToken(requestDeserialized.authCode)
+        val email = onedrive.getEmail(accessToken)
+        userRepository.addUser(email, accessToken.refresh_token)
+        return Response(ACCEPTED)
     }
 }
 
@@ -50,6 +52,15 @@ object GetCurrentUser {
                 else -> Response(OK).withBody(User(it.email))
             }
         }
+}
+
+data class OnedriveCallbackRequest(
+    val authCode: String
+) {
+    companion object {
+        private val lens = Body.auto<OnedriveCallbackRequest>().toLens()
+        operator fun invoke(request: Request) = lens(request)
+    }
 }
 
 abstract class UserResponse

@@ -58,7 +58,7 @@ class CurrentUserTests {
     }
     @Test
     fun `current user endpoint returns redirect object when not logged in`() {
-        config.port = 80
+        config.port = 38080
         val response = api(Request(GET, "/user/me"))
 
         assertThat(response.status).isEqualTo(OK)
@@ -80,7 +80,5 @@ class CurrentUserTests {
         val user = User.lens(response)
         assertThat(user.email).isEqualTo("the_email")
     }
-
-
 }
 
