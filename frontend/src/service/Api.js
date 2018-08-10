@@ -34,5 +34,6 @@ export default class Api {
           authCode: code
         })
       })
+      .then(this.handleNotOk)
   }
 }

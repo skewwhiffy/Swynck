@@ -19,7 +19,9 @@ export default class Auth extends Component {
       this
         .api
         .setAuthCode(code)
-        .then(() => window.redirect("/"));
+        .then(() => {
+          window.location.replace("/");
+        });
       return
     }
 
