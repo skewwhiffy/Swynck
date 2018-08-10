@@ -1,5 +1,8 @@
 package swynck.db
 
+import swynck.model.User
+import swynck.service.UserDetails
+
 class UserRepository(private val dataSourceFactory: DataSourceFactory) {
     fun getUser() : User? {
         val users = dataSourceFactory.sql2o().use {
@@ -9,21 +12,20 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
         return users.singleOrNull()
     }
 
-    fun addUser(email: String, refreshToken: String) {
+    fun addUser(
+        userDetails: UserDetails,
+        refreshToken: String
+    ) {
         if (getUser() != null) throw NotImplementedError("Multiple users")
         dataSourceFactory.sql2o().use {
             it.createQuery("""
-                INSERT INTO users (email, refreshToken)
-                VALUES (:email, :refreshToken)
+                INSERT INTO users (id, displayName, refreshToken)
+                VALUES (:id, :displayName, :refreshToken)
             """.trimIndent())
-                .addParameter("email", email)
+                .addParameter("id", userDetails.id)
+                .addParameter("displayName", userDetails.displayName)
                 .addParameter("refreshToken", refreshToken)
                 .executeUpdate()
         }
     }
 }
-
-data class User(
-    val email: String,
-    val refreshToken: String
-)

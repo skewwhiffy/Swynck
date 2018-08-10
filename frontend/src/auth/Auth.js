@@ -33,9 +33,9 @@ export default class Auth extends Component {
             loggedIn: false
           })
         }
-        if (it.email) {
+        if (it.displayName) {
           this.setState({
-            loggedIn: it.email,
+            loggedIn: it.displayName,
             loginRedirect: false
           })
         }

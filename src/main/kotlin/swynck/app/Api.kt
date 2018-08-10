@@ -6,7 +6,6 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.ACCEPTED
-import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -34,8 +33,8 @@ object OnedriveCallback {
     ): Response {
         val requestDeserialized = OnedriveCallbackRequest(request)
         val accessToken = onedrive.getAccessToken(requestDeserialized.authCode)
-        val email = onedrive.getEmail(accessToken)
-        userRepository.addUser(email, accessToken.refresh_token)
+        val userDetails = onedrive.getUserDetails(accessToken)
+        userRepository.addUser(userDetails, accessToken.refresh_token)
         return Response(ACCEPTED)
     }
 }
@@ -49,7 +48,7 @@ object GetCurrentUser {
         .let {
             when (it) {
                 null -> Response(OK).withBody(UserNotFound(oneDrive.authenticationUrl()))
-                else -> Response(OK).withBody(User(it.email))
+                else -> Response(OK).withBody(User(it.displayName))
             }
         }
 }
@@ -66,7 +65,7 @@ data class OnedriveCallbackRequest(
 abstract class UserResponse
 
 data class User(
-    val email: String
+    val displayName: String
 ) : UserResponse() {
     companion object {
         val lens = Body.auto<User>().toLens()

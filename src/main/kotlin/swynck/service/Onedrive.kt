@@ -1,14 +1,15 @@
 package swynck.service
 
+import com.sun.java.util.jar.pack.DriverResource
 import swynck.config.Json.auto
 import org.http4k.client.OkHttp
 import org.http4k.core.Body
+import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.nuxeo.onedrive.client.OneDriveAPI
 import org.nuxeo.onedrive.client.OneDriveBasicAPI
-import org.nuxeo.onedrive.client.OneDriveEmailAccount
 import swynck.config.Config
 import swynck.config.canAuthenticateOnedrive
 import java.net.PortUnreachableException
@@ -58,11 +59,42 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    open fun getEmail(accessToken: AccessToken): String {
-        return OneDriveEmailAccount.getCurrentUserEmailAccount(accessToken.api())
+    open fun getUserDetails(accessToken: AccessToken): UserDetails {
+        val client = OkHttp()
+        return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
+            .header("Authorization", "bearer ${accessToken.access_token}")
+            .let { client(it) }
+            .let { DriveResource(it) }
+            .let { it.owner.user }
+            .let { UserDetails(it.id, it.displayName) }
     }
 
     private fun AccessToken.api(): OneDriveAPI = OneDriveBasicAPI(this.access_token)
+}
+
+data class UserDetails(
+    val id: String,
+    val displayName: String
+)
+
+data class DriveResource(
+    val id: String,
+    val owner: IdentitySetResource
+) {
+    companion object {
+        private val lens = Body.auto<DriveResource>().toLens()
+        operator fun invoke(response: Response) = lens(response)
+        data class IdentitySetResource(
+            val user: IdentityResource
+        ) {
+            companion object {
+                data class IdentityResource(
+                    val displayName: String,
+                    val id: String
+                )
+            }
+        }
+    }
 }
 
 data class AccessToken(
