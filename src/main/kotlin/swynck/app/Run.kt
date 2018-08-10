@@ -2,20 +2,19 @@ package swynck.app
 
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
-import swynck.config.Config
-import swynck.db.DataSourceFactory
 import swynck.db.Migrations
 
-fun main(args: Array<String>) = Run(Config())
+fun main(args: Array<String>) = Run(Dependencies())
 
 object Run {
-    operator fun invoke(config: Config) = this(config, DataSourceFactory(config))
-
-    operator fun invoke(config: Config, dataSourceFactory: DataSourceFactory) {
+    operator fun invoke(dependencies: Dependencies) {
         println("Applying migrations")
-        Migrations(dataSourceFactory).run()
-        println("Starting server on port ${config.port()}")
-        App().asServer(Undertow(config.port())).start()
+        Migrations(dependencies.dataSourceFactory).run()
+        println("Starting server on port ${dependencies.config.port()}")
+        App(
+            dependencies.userRepository,
+            dependencies.oneDrive
+        ).asServer(Undertow(dependencies.config.port())).start()
         println("Server started")
     }
 }

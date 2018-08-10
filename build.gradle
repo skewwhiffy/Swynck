@@ -28,11 +28,14 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven {
+        url "http://maven.nuxeo.org/nexus/content/groups/public"
+    }
     jcenter()
 }
 
 dependencies {
-    compile "com.statemachinesystems:envy:1.8"
+    compile "com.statemachinesystems:envy:1.9"
     compile "org.flywaydb:flyway-core:5.1.4"
     compile "com.h2database:h2:1.4.197"
     compile "org.http4k:http4k-contract:3.32.1"
@@ -43,9 +46,12 @@ dependencies {
     compile "org.http4k:http4k-server-undertow:3.32.1"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
+    compile "org.nuxeo.onedrive:onedrive-java-client:1.0"
+    compile "org.sql2o:sql2o:1.5.1"
 
     testCompile "junit:junit:4.12"
     testCompile "org.assertj:assertj-core:3.10.0"
+    testCompile "io.mockk:mockk:1.7.15"
 }
 
 compileKotlin {

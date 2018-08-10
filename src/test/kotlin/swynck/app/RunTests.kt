@@ -27,7 +27,7 @@ class RunTests {
 
     @Test
     fun `ping endpoint works`() {
-        val response = server.client(Request(GET, "http://localhost:${server.config.port()}/ping"))
+        val response = server.client(Request(GET, "http://localhost:${server.dependencies.config.port()}/ping"))
 
         assertThat(response.bodyString()).isEqualTo("pong")
     }

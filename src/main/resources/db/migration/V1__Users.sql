@@ -1,4 +1,5 @@
 CREATE TABLE users (
-  name VARCHAR(255),
-  refreshToken VARCHAR(255)
+  id VARCHAR(255),
+  displayName VARCHAR(255),
+  refreshToken VARCHAR(512)
 )
