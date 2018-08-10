@@ -15,6 +15,10 @@ interface Config {
     fun db(): String
 }
 
-private val callbackPorts = setOf(38080)
+private val callbackPorts = setOf(
+    8080,
+    9000,
+    38080
+)
 
 fun Config.canAuthenticateOnedrive() = callbackPorts.contains(port())

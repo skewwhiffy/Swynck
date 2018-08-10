@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Api from '../service/Api';
+import Api from '../../service/Api';
 
 export default class Auth extends Component {
   api = new Api();
