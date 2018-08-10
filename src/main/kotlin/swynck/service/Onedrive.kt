@@ -1,25 +1,23 @@
 package swynck.service
 
-import com.sun.java.util.jar.pack.DriverResource
-import swynck.config.Json.auto
 import org.http4k.client.OkHttp
 import org.http4k.core.Body
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
-import org.nuxeo.onedrive.client.OneDriveAPI
-import org.nuxeo.onedrive.client.OneDriveBasicAPI
 import swynck.config.Config
+import swynck.config.Json.auto
 import swynck.config.canAuthenticateOnedrive
+import swynck.model.User
 import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
 
 open class Onedrive(private val config: Config) {
     companion object {
-        private val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
-        private val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
+        private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
+        private const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
         private val scopes = setOf("files.readwrite", "offline_access")
     }
 
@@ -59,23 +57,16 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    open fun getUserDetails(accessToken: AccessToken): UserDetails {
+    open fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
         return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { client(it) }
             .let { DriveResource(it) }
             .let { it.owner.user }
-            .let { UserDetails(it.id, it.displayName) }
+            .let { User(it.id, it.displayName, accessToken.refresh_token) }
     }
-
-    private fun AccessToken.api(): OneDriveAPI = OneDriveBasicAPI(this.access_token)
 }
-
-data class UserDetails(
-    val id: String,
-    val displayName: String
-)
 
 data class DriveResource(
     val id: String,

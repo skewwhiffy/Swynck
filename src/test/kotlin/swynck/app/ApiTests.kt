@@ -5,13 +5,16 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.Request
+import org.http4k.core.Status.Companion.ACCEPTED
 import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Before
 import org.junit.Test
 import swynck.db.Migrations
+import swynck.model.User
 import swynck.service.AccessToken
 import swynck.service.Onedrive
 import swynck.test.utils.TestConfig
@@ -28,19 +31,24 @@ class OnedriveCallbackTests {
             "${UUID.randomUUID()}",
             5
         )
-        val email = "${UUID.randomUUID()}@test.com"
+        val id = "${UUID.randomUUID()}"
+        val displayName = "${UUID.randomUUID()}"
         val onedrive = mockk<Onedrive>()
         val api = Api(dependencies.userRepository, onedrive)
         every { onedrive.getAccessToken(authCode) } returns accessToken
-        every { onedrive.getEmail(accessToken) } returns email
+        every { onedrive.getUser(accessToken) } returns User(id, displayName, accessToken.refresh_token)
 
-        val response = api(Request(GET, "/onedrive?code=$authCode"))
+        val response = """
+            {"authCode":"$authCode"}
+        """.trimIndent()
+            .let { Request(POST, "/onedrive/authcode").body(it) }
+            .let { api(it) }
 
         verify { onedrive.getAccessToken(authCode) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
         assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
-        assertThat(user.email).isEqualTo(email)
-        assertThat(response.status).isEqualTo(MOVED_PERMANENTLY)
+        assertThat(user.displayName).isEqualTo(displayName)
+        assertThat(response.status).isEqualTo(ACCEPTED)
     }
 }
 
@@ -70,15 +78,16 @@ class CurrentUserTests {
     fun `current user endpoint returns current user name`() {
         dependencies.dataSourceFactory.dataSource().connection!!.use {
             it.createStatement().execute("""
-                insert into users (email, refreshToken) values ('the_email', 'the_token')
+                insert into users (id, displayName, refreshToken)
+                values ('the_id', 'the_display_name', 'the_token')
             """.trimIndent())
         }
 
         val response = api(Request(GET, "/user/me"))
 
         assertThat(response.status).isEqualTo(OK)
-        val user = User.lens(response)
-        assertThat(user.email).isEqualTo("the_email")
+        val user = UserFound.lens(response)
+        assertThat(user.displayName).isEqualTo("the_display_name")
     }
 }
 

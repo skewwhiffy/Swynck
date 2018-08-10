@@ -33,8 +33,8 @@ object OnedriveCallback {
     ): Response {
         val requestDeserialized = OnedriveCallbackRequest(request)
         val accessToken = onedrive.getAccessToken(requestDeserialized.authCode)
-        val userDetails = onedrive.getUserDetails(accessToken)
-        userRepository.addUser(userDetails, accessToken.refresh_token)
+        val userDetails = onedrive.getUser(accessToken)
+        userRepository.addUser(userDetails)
         return Response(ACCEPTED)
     }
 }
@@ -48,7 +48,7 @@ object GetCurrentUser {
         .let {
             when (it) {
                 null -> Response(OK).withBody(UserNotFound(oneDrive.authenticationUrl()))
-                else -> Response(OK).withBody(User(it.displayName))
+                else -> Response(OK).withBody(UserFound(it.displayName))
             }
         }
 }
@@ -64,11 +64,11 @@ data class OnedriveCallbackRequest(
 
 abstract class UserResponse
 
-data class User(
+data class UserFound(
     val displayName: String
 ) : UserResponse() {
     companion object {
-        val lens = Body.auto<User>().toLens()
+        val lens = Body.auto<UserFound>().toLens()
     }
 }
 
@@ -81,7 +81,7 @@ data class UserNotFound(
 }
 
 private fun Response.withBody(userResponse: UserResponse) = when(userResponse) {
-    is User -> User.lens.inject(userResponse, this)
+    is UserFound -> UserFound.lens.inject(userResponse, this)
     is UserNotFound -> UserNotFound.lens.inject(userResponse, this)
     else -> throw NotImplementedError()
 }
