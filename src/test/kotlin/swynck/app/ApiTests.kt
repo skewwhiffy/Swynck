@@ -8,7 +8,6 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
-import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Before
@@ -35,8 +34,10 @@ class OnedriveCallbackTests {
         val displayName = "${UUID.randomUUID()}"
         val onedrive = mockk<Onedrive>()
         val api = Api(dependencies.userRepository, onedrive)
+        val redirectUri = "${UUID.randomUUID()}.com"
         every { onedrive.getAccessToken(authCode) } returns accessToken
-        every { onedrive.getUser(accessToken) } returns User(id, displayName, accessToken.refresh_token)
+        every { onedrive.getUser(accessToken) } returns
+            User(id, displayName, redirectUri, accessToken.refresh_token)
 
         val response = """
             {"authCode":"$authCode"}

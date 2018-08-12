@@ -57,6 +57,25 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
+    open fun getAccessToken(user: User): AccessToken {
+        val request = mapOf(
+            "client_id" to clientId,
+            "redirect_uri" to user.redirectUri,
+            "client_secret" to clientSecret,
+            "grant_type" to "refresh_token",
+            "refresh_token" to user.refreshToken
+        )
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
+        val client = OkHttp()
+        val response = client(request)
+        return if (response.status.successful) AccessToken(response)
+        else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
+    }
+
     open fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
         return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
@@ -64,7 +83,7 @@ open class Onedrive(private val config: Config) {
             .let { client(it) }
             .let { DriveResource(it) }
             .let { it.owner.user }
-            .let { User(it.id, it.displayName, accessToken.refresh_token) }
+            .let { User(it.id, it.displayName, accessToken.refresh_token, redirectUri) }
     }
 }
 
