@@ -28,7 +28,7 @@ object Api {
 
 object GetFiles {
     operator fun invoke(): Response {
-        return Response(OK)
+        return Response(OK).body("[]")
     }
 }
 

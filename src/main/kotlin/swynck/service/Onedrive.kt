@@ -83,7 +83,7 @@ open class Onedrive(private val config: Config) {
             .let { client(it) }
             .let { DriveResource(it) }
             .let { it.owner.user }
-            .let { User(it.id, it.displayName, accessToken.refresh_token, redirectUri) }
+            .let { User(it.id, it.displayName, redirectUri, accessToken.refresh_token) }
     }
 }
 

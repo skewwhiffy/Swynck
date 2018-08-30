@@ -19,9 +19,9 @@ import swynck.service.Onedrive
 import swynck.test.utils.TestConfig
 import java.util.*
 
-class OnedriveCallbackTests {
+class OneDriveCallbackTests {
     @Test
-    fun `onedrive callback populates refresh token`() {
+    fun `one drive callback populates refresh token`() {
         val dependencies = Dependencies(TestConfig())
         Migrations(dependencies.dataSourceFactory).run()
         val authCode = "${UUID.randomUUID()}"
@@ -32,11 +32,11 @@ class OnedriveCallbackTests {
         )
         val id = "${UUID.randomUUID()}"
         val displayName = "${UUID.randomUUID()}"
-        val onedrive = mockk<Onedrive>()
-        val api = Api(dependencies.userRepository, onedrive)
+        val oneDrive = mockk<Onedrive>()
+        val api = Api(dependencies.userRepository, oneDrive)
         val redirectUri = "${UUID.randomUUID()}.com"
-        every { onedrive.getAccessToken(authCode) } returns accessToken
-        every { onedrive.getUser(accessToken) } returns
+        every { oneDrive.getAccessToken(authCode) } returns accessToken
+        every { oneDrive.getUser(accessToken) } returns
             User(id, displayName, redirectUri, accessToken.refresh_token)
 
         val response = """
@@ -45,7 +45,7 @@ class OnedriveCallbackTests {
             .let { Request(POST, "/onedrive/authcode").body(it) }
             .let { api(it) }
 
-        verify { onedrive.getAccessToken(authCode) }
+        verify { oneDrive.getAccessToken(authCode) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
         assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
         assertThat(user.displayName).isEqualTo(displayName)

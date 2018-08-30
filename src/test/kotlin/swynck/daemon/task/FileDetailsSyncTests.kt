@@ -1,5 +1,6 @@
 package swynck.daemon.task
 
+import junit.framework.Assert.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Before
 import org.junit.BeforeClass
@@ -52,12 +53,13 @@ class FileDetailsSyncTests {
 
     @Test
     fun `can get refresh token`() {
+        if (!userExists) fail("No user in DB: cannot test")
 
     }
 
     @Test
     fun `folders are populated`() {
-        if (!userExists) return
+        if (!userExists) fail("No user in DB: cannot test")
 
     }
 }
