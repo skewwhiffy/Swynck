@@ -9,6 +9,7 @@ import org.http4k.core.Response
 import swynck.config.Config
 import swynck.config.Json.auto
 import swynck.config.canAuthenticateOnedrive
+import swynck.dto.onedrive.DeltaResponse
 import swynck.model.User
 import java.net.PortUnreachableException
 import java.net.URI
@@ -84,6 +85,18 @@ open class Onedrive(private val config: Config) {
             .let { DriveResource(it) }
             .let { it.owner.user }
             .let { User(it.id, it.displayName, redirectUri, accessToken.refresh_token) }
+    }
+
+    open fun getDelta(accessToken: AccessToken, nextLink: URI? = null): DeltaResponse {
+        val client = OkHttp()
+        nextLink ?: return getDelta(
+            accessToken,
+            URI("https://graph.microsoft.com/v1.0/me/drive/root/delta")
+        )
+        return Request(GET, nextLink.toString())
+            .header("Authorization", "bearer ${accessToken.access_token}")
+            .let { client(it) }
+            .let { DeltaResponse(it) }
     }
 }
 

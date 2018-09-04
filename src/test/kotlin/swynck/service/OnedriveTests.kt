@@ -10,6 +10,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.sql2o.Sql2o
 import swynck.config.Config
+import swynck.config.Json
 import swynck.db.DataSourceFactory
 import swynck.db.Migrations
 import swynck.db.UserRepository
@@ -66,7 +67,20 @@ class OnedriveAccessTokenTests {
     fun `can get refresh token`() {
         val accessToken = onedrive.getAccessToken(user)
 
-        assertThat(accessToken.refresh_token).isEqualTo(user.refreshToken)
+        assertThat(accessToken.access_token).isNotBlank()
+    }
+
+    @Test
+    fun `can get deltas`() {
+        val accessToken = onedrive.getAccessToken(user)
+
+        var delta = onedrive.getDelta(accessToken)
+        var items = 0
+        while (delta.nextLink != null && items < 1000) {
+            println("Delta with next link: ${delta.nextLink} with ${delta.value.size} items")
+            items += delta.value.size
+            delta = onedrive.getDelta(accessToken, delta.nextLink)
+        }
     }
 }
 
