@@ -2,43 +2,53 @@ package swynck.daemon
 
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
 import org.h2.mvstore.ConcurrentArrayList
 import swynck.daemon.task.DaemonTask
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import kotlin.streams.asStream
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentSkipListSet
 
-class DaemonRunner {
-    private val runnerTask: Deferred<Nothing>
-    init {
-        runnerTask = async {
-            start()
-        }
-    }
+class DaemonRunner(private val clock: Clock) {
+    private var runnerTask: Deferred<Nothing>? = null
+    private val running = ConcurrentLinkedQueue<Deferred<*>>()
+    val exceptions = ConcurrentArrayList<Exception>()
 
-    private val tasks = ConcurrentArrayList<DaemonTask>()
+    private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
+    private val tasksAndRuns = ConcurrentHashMap<UUID, ConcurrentSkipListSet<Instant>>()
 
     fun add(task: DaemonTask) {
-        tasks.add(task)
+        val key = UUID.randomUUID()
+        taskKeys[key] = task
+        tasksAndRuns[key] = ConcurrentSkipListSet()
+        @Synchronized
+        runnerTask = runnerTask ?: async { start() }
     }
 
     private suspend fun start(): Nothing {
-        var lastRun = Instant.now()
         while (true) {
-            val nextRun = lastRun.plusSeconds(1)
-            val now = Instant.now()
-            if (nextRun > now) {
-                val wait = Duration.between(now, nextRun)
-                delay(wait.toMillis())
+            running
+                .filter { it.isCompleted }
+                .let { running.removeAll(it) }
+            tasksAndRuns.keys.forEach { taskKey ->
+                val now = clock.instant()
+                val oneMinuteAgo = now.minus(Duration.ofMinutes(1))
+                tasksAndRuns[taskKey]!!
+                    .removeAll(tasksAndRuns[taskKey]!!.filter { it < oneMinuteAgo })
+                if (tasksAndRuns[taskKey]!!.size < taskKeys[taskKey]!!.runsPerMinute) {
+                    running.add(async {
+                        try {
+                            taskKeys[taskKey]!!.run()
+                        } catch (e: Exception) {
+                            exceptions.add(e)
+                        }
+                    })
+                    tasksAndRuns[taskKey]!!.add(now)
+                }
             }
-            val runs = tasks.iterator().asSequence().map { async { it.run() } }
-            // TODO: There must be a nicer way to do this
-            while (runs.any { it.isActive }) {
-                delay(50)
-            }
-            lastRun = Instant.now()
         }
     }
 }

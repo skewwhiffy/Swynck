@@ -10,7 +10,6 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.sql2o.Sql2o
 import swynck.config.Config
-import swynck.config.Json
 import swynck.db.DataSourceFactory
 import swynck.db.Migrations
 import swynck.db.UserRepository
@@ -60,7 +59,6 @@ class OnedriveAccessTokenTests {
         Migrations(dataSourceFactory).run()
         userRepository = UserRepository(dataSourceFactory)
         userRepository.addUser(user)
-        print(user.redirectUri)
     }
 
     @Test

@@ -2,7 +2,6 @@ package swynck.app
 
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
-import swynck.daemon.DaemonRunner
 import swynck.daemon.task.FileDetailsSync
 import swynck.db.Migrations
 
@@ -17,9 +16,11 @@ object Run {
             dependencies.userRepository,
             dependencies.oneDrive
         ).asServer(Undertow(dependencies.config.port())).start()
-        println("Starting daemon runner")
-        val daemon = DaemonRunner()
-        dependencies.userRepository.getUser()?.let { FileDetailsSync(it) }?.let { daemon.add(it) }
+        dependencies
+            .userRepository
+            .getUser()
+            ?.let { FileDetailsSync(it) }
+            ?.let { dependencies.daemonRunner.add(it) }
         println("Swynck started")
     }
 }
