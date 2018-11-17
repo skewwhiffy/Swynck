@@ -15,7 +15,7 @@ import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
 
-open class Onedrive(private val config: Config) {
+class Onedrive(private val config: Config) {
     companion object {
         private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
         private const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
@@ -39,7 +39,7 @@ open class Onedrive(private val config: Config) {
             .let { URI("https://login.live.com/oauth20_authorize.srf?$it") }
     }
 
-    open fun getAccessToken(authCode: String): AccessToken {
+    fun getAccessToken(authCode: String): AccessToken {
         val request = mapOf(
             "client_id" to clientId,
             "redirect_uri" to redirectUri,
@@ -58,7 +58,7 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    open fun getAccessToken(user: User): AccessToken {
+    fun getAccessToken(user: User): AccessToken {
         val request = mapOf(
             "client_id" to clientId,
             "redirect_uri" to user.redirectUri,
@@ -77,7 +77,7 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    open fun getUser(accessToken: AccessToken): User {
+    fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
         return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
             .header("Authorization", "bearer ${accessToken.access_token}")
@@ -87,7 +87,7 @@ open class Onedrive(private val config: Config) {
             .let { User(it.id, it.displayName, redirectUri, accessToken.refresh_token) }
     }
 
-    open fun getDelta(accessToken: AccessToken, nextLink: URI? = null): DeltaResponse {
+    fun getDelta(accessToken: AccessToken, nextLink: URI? = null): DeltaResponse {
         val client = OkHttp()
         nextLink ?: return getDelta(
             accessToken,
