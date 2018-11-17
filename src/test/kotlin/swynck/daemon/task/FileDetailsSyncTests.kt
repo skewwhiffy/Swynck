@@ -1,5 +1,6 @@
 package swynck.daemon.task
 
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Before
@@ -55,6 +56,9 @@ class FileDetailsSyncTests {
     fun `can get refresh token`() {
         if (!userExists) fail("No user in DB: cannot test")
 
+        val accessToken = onedrive.getAccessToken(user)
+
+        assertThat(accessToken.refresh_token).isNotBlank()
     }
 
     @Test

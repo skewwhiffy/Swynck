@@ -1,8 +1,12 @@
 package swynck.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.h2.jdbcx.JdbcDataSource
+import org.http4k.format.ConfigurableJackson
+import org.http4k.format.Jackson
+import org.http4k.format.defaultKotlinModuleWithHttp4kSerialisers
 import org.junit.Assume.assumeFalse
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -13,10 +17,12 @@ import swynck.config.Config
 import swynck.db.DataSourceFactory
 import swynck.db.Migrations
 import swynck.db.UserRepository
+import swynck.dto.onedrive.DriveItem
 import swynck.model.User
 import swynck.test.utils.TestConfig
 import java.io.File
 import java.net.PortUnreachableException
+import java.net.URI
 
 class OnedriveAccessTokenTests {
     companion object {
@@ -72,13 +78,14 @@ class OnedriveAccessTokenTests {
     fun `can get deltas`() {
         val accessToken = onedrive.getAccessToken(user)
 
-        var delta = onedrive.getDelta(accessToken)
-        var items = 0
-        while (delta.nextLink != null && items < 1000) {
-            println("Delta with next link: ${delta.nextLink} with ${delta.value.size} items")
-            items += delta.value.size
-            delta = onedrive.getDelta(accessToken, delta.nextLink)
+        fun getDeltas(soFar: Int, limit: Int, nextLink: URI?) {
+            if (soFar >= limit) return
+            val delta = onedrive.getDelta(accessToken, nextLink)
+            Jackson.asJsonString(delta.value).let(::println)
+            delta.nextLink?:return
+            getDeltas(soFar + delta.value.size, limit, delta.nextLink)
         }
+        getDeltas(0, 1000, null)
     }
 }
 
