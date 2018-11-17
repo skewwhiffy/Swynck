@@ -1,6 +1,6 @@
 package swynck.daemon.task
 
-import junit.framework.Assert.fail
+import org.assertj.core.api.Assertions.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Before
 import org.junit.BeforeClass
