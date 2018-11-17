@@ -11,7 +11,7 @@ interface Config {
     @Default("38080")
     fun port(): Int
 
-    @Default("jdbc:h2:~/.config/swynck")
+    @Default("jdbc:h2:~/.config/swynck/swynck")
     fun db(): String
 }
 

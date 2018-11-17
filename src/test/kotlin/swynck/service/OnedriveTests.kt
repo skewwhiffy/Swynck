@@ -3,6 +3,7 @@ package swynck.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.http4k.format.ConfigurableJackson
 import org.http4k.format.Jackson
@@ -32,22 +33,18 @@ class OnedriveAccessTokenTests {
         @JvmStatic
         fun initClass() {
             val home = System.getProperty("user.home")
-            val file = File("$home/.config/swynck.mv.db")
+            val file = File("$home/.config/swynck/swynck.mv.db")
             if (!file.exists()) {
                 assumeTrue("DB does not exist", true)
-                println("DB does not exist at ${file.absolutePath}")
-                return
+                fail("DB does not exist at ${file.absolutePath}")
             }
-            val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck")}
+            val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck/swynck")}
             val sql2o = Sql2o(dataSource)
             sql2o.open().use {
                 val users = it
                     .createQuery("SELECT * FROM users")
                     .executeAndFetch(User::class.java)
-                if (users.size != 1) {
-                    assumeFalse("More than one refresh token not supported", true)
-                    return
-                }
+                if (users.size != 1) fail("More than one refresh token not supported")
                 user = users.single()
             }
         }

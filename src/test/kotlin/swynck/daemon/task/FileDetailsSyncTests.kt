@@ -22,12 +22,12 @@ class FileDetailsSyncTests {
         @JvmStatic
         fun initClass() {
             val home = System.getProperty("user.home")
-            val file = File("$home/.config/swynck.mv.db")
+            val file = File("$home/.config/swynck/swynck.mv.db")
             if (!file.exists()) {
                 println("DB does not exist at ${file.absolutePath}")
                 return
             }
-            val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck")}
+            val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck/swynck")}
             val sql2o = Sql2o(dataSource)
             sql2o.open().use {
                 val users = it
