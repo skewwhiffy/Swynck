@@ -1,13 +1,13 @@
 package swynck.db
 
 import org.sql2o.Query
-import swynck.util.executeAndFetchFirst
 import kotlin.collections.MutableMap.MutableEntry
 
 class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     : MutableMap<String, String> {
 
     private fun Query.addKey(key: String) = addParameter("key", key)
+    private fun Query.addValue(value: String) = addParameter("value", value)
 
     override val size: Int
         get() = dataSourceFactory
@@ -15,7 +15,7 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
             .use {
                 "SELECT COUNT(*) FROM SystemStatus"
                     .let(it::createQuery)
-                    .executeAndFetchFirst()
+                    .executeScalar(Int::class.java)
             }
 
     override fun containsKey(key: String) = dataSourceFactory
@@ -27,17 +27,25 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
                 .executeScalar(Int::class.java)
         } > 0
 
-    override fun containsValue(value: String): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun containsValue(value: String) = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT COUNT(*) FROM SystemStatus WHERE value = :value"
+                .let(it::createQuery)
+                .addValue(value)
+                .executeScalar(Int::class.java)
+        } > 0
 
-    override fun get(key: String): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun get(key: String) = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT value FROM SystemStatus WHERE key = :key"
+                .let(it::createQuery)
+                .addKey(key)
+                .executeScalar(String::class.java)
+        }
 
-    override fun isEmpty(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun isEmpty() = size == 0
 
     override val entries: MutableSet<MutableEntry<String, String>>
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
@@ -47,7 +55,13 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
     override fun clear() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        dataSourceFactory
+            .sql2o()
+            .use {
+                "DELETE FROM SystemStatus"
+                    .let(it::createQuery)
+                    .executeUpdate()
+            }
     }
 
     override fun put(key: String, value: String): String? {
@@ -76,14 +90,14 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     override fun remove(key: String): String? {
         return dataSourceFactory
             .sql2o()
-            .run {
+            .use {
                 val returnValue = "SELECT value FROM systemStatus WHERE KEY = :key"
-                    .let(::createQuery)
+                    .let(it::createQuery)
                     .addKey(key)
                     .executeScalar(String::class.java)
 
                 "DELETE FROM systemStatus WHERE KEY = :key"
-                    .let(::createQuery)
+                    .let(it::createQuery)
                     .addKey(key)
                     .executeUpdate()
 

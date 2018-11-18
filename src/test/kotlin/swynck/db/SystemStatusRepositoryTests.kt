@@ -80,5 +80,36 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
         assertThat(map.containsKey(key)).isTrue()
     }
 
+    @Test
+    fun `containsValue is true only if value is defined`() {
+        val value = getNewString()
+        assertThat(map.containsValue(value)).isFalse()
+
+        map[getNewString()] = value
+
+        assertThat(map.containsValue(value)).isTrue()
+    }
+
+    @Test
+    fun `get element returns value if set`() {
+        val key = getNewString()
+        val value = getNewString()
+        assertThat(map[key]).isNull()
+
+        map[key] = value
+
+        assertThat(map[key]).isEqualTo(value)
+    }
+
+    @Test
+    fun `isEmpty() works as expected`() {
+        map.clear()
+        assertThat(map.isEmpty()).isTrue()
+
+        map[getNewString()] = getNewString()
+
+        assertThat(map.isEmpty()).isFalse()
+    }
+
     private fun getNewString() = "${UUID.randomUUID()}"
 }
