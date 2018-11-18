@@ -11,10 +11,14 @@ interface Config {
     @Default("38080")
     fun port(): Int
 
-    @Default("jdbc:h2:~/.config/swynck")
+    @Default("jdbc:h2:~/.config/swynck/swynck")
     fun db(): String
 }
 
-private val callbackPorts = setOf(38080)
+private val callbackPorts = setOf(
+    8080,
+    9000,
+    38080
+)
 
 fun Config.canAuthenticateOnedrive() = callbackPorts.contains(port())

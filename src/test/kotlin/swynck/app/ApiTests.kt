@@ -8,7 +8,6 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
-import org.http4k.core.Status.Companion.MOVED_PERMANENTLY
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Before
@@ -20,9 +19,9 @@ import swynck.service.Onedrive
 import swynck.test.utils.TestConfig
 import java.util.*
 
-class OnedriveCallbackTests {
+class OneDriveCallbackTests {
     @Test
-    fun `onedrive callback populates refresh token`() {
+    fun `one drive callback populates refresh token`() {
         val dependencies = Dependencies(TestConfig())
         Migrations(dependencies.dataSourceFactory).run()
         val authCode = "${UUID.randomUUID()}"
@@ -33,10 +32,12 @@ class OnedriveCallbackTests {
         )
         val id = "${UUID.randomUUID()}"
         val displayName = "${UUID.randomUUID()}"
-        val onedrive = mockk<Onedrive>()
-        val api = Api(dependencies.userRepository, onedrive)
-        every { onedrive.getAccessToken(authCode) } returns accessToken
-        every { onedrive.getUser(accessToken) } returns User(id, displayName, accessToken.refresh_token)
+        val oneDrive = mockk<Onedrive>()
+        val api = Api(dependencies.userRepository, oneDrive)
+        val redirectUri = "${UUID.randomUUID()}.com"
+        every { oneDrive.getAccessToken(authCode) } returns accessToken
+        every { oneDrive.getUser(accessToken) } returns
+            User(id, displayName, redirectUri, accessToken.refresh_token)
 
         val response = """
             {"authCode":"$authCode"}
@@ -44,7 +45,7 @@ class OnedriveCallbackTests {
             .let { Request(POST, "/onedrive/authcode").body(it) }
             .let { api(it) }
 
-        verify { onedrive.getAccessToken(authCode) }
+        verify { oneDrive.getAccessToken(authCode) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
         assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
         assertThat(user.displayName).isEqualTo(displayName)

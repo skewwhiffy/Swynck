@@ -1,12 +1,92 @@
 package swynck.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.fail
+import org.h2.jdbcx.JdbcDataSource
+import org.http4k.format.ConfigurableJackson
+import org.http4k.format.Jackson
+import org.http4k.format.defaultKotlinModuleWithHttp4kSerialisers
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
+import org.sql2o.Sql2o
+import swynck.config.Config
+import swynck.db.DataSourceFactory
+import swynck.db.Migrations
+import swynck.db.UserRepository
+import swynck.dto.onedrive.DriveItem
+import swynck.model.User
 import swynck.test.utils.TestConfig
+import java.io.File
 import java.net.PortUnreachableException
+import java.net.URI
 
-class OnedriveTests {
+class OnedriveAccessTokenTests {
+    companion object {
+        private lateinit var user: User
+
+        @BeforeClass
+        @JvmStatic
+        fun initClass() {
+            val home = System.getProperty("user.home")
+            val file = File("$home/.config/swynck/swynck.mv.db")
+            if (!file.exists()) {
+                assumeTrue("DB does not exist", true)
+                fail("DB does not exist at ${file.absolutePath}")
+            }
+            val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck/swynck")}
+            val sql2o = Sql2o(dataSource)
+            sql2o.open().use {
+                val users = it
+                    .createQuery("SELECT * FROM users")
+                    .executeAndFetch(User::class.java)
+                if (users.size != 1) fail("More than one refresh token not supported")
+                user = users.single()
+            }
+        }
+    }
+
+    private lateinit var config: Config
+    private lateinit var onedrive: Onedrive
+    private lateinit var userRepository: UserRepository
+
+    @Before
+    fun init() {
+        config = TestConfig()
+        onedrive = Onedrive(config)
+        val dataSourceFactory = DataSourceFactory(config)
+        Migrations(dataSourceFactory).run()
+        userRepository = UserRepository(dataSourceFactory)
+        userRepository.addUser(user)
+    }
+
+    @Test
+    fun `can get refresh token`() {
+        val accessToken = onedrive.getAccessToken(user)
+
+        assertThat(accessToken.access_token).isNotBlank()
+    }
+
+    @Test
+    fun `can get deltas`() {
+        val accessToken = onedrive.getAccessToken(user)
+
+        fun getDeltas(soFar: Int, limit: Int, nextLink: URI?) {
+            if (soFar >= limit) return
+            val delta = onedrive.getDelta(accessToken, nextLink)
+            Jackson.asJsonString(delta.value).let(::println)
+            delta.nextLink?:return
+            getDeltas(soFar + delta.value.size, limit, delta.nextLink)
+        }
+        getDeltas(0, 1000, null)
+    }
+}
+
+class OnedriveAuthenticationTests {
     private lateinit var config: TestConfig
     private lateinit var onedrive: Onedrive
 

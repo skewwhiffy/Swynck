@@ -26,6 +26,12 @@ export default class Api {
       .then(it => it.json())
   }
 
+  getFiles() {
+    return fetch(this.getRequestUrl("/api/files"))
+      .then(this.handleNotOk)
+      .then(it => it.json());
+  }
+
   setAuthCode(code) {
     return fetch(this.getRequestUrl("/api/onedrive/authcode"),
       {

@@ -1,11 +1,24 @@
 import React, { Component } from 'react';
-import Auth from './auth/Auth';
+import { Tabs, Tab } from "react-bootstrap";
+import Header from "./component/header/Header";
+import Files from "./component/files/Files";
+import "./app.css";
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <Auth/>
+        <Header/>
+        <div className="content">
+          <Tabs id="tabs" defaultActiveKey="files">
+            <Tab eventKey="files" title="Files">
+              <Files/>
+            </Tab>
+            <Tab eventKey="music" title="Music">
+              <p>TODO: Music</p>
+            </Tab>
+          </Tabs>
+        </div>
       </div>
     );
   }

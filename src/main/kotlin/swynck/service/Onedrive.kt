@@ -9,12 +9,13 @@ import org.http4k.core.Response
 import swynck.config.Config
 import swynck.config.Json.auto
 import swynck.config.canAuthenticateOnedrive
+import swynck.dto.onedrive.DeltaResponse
 import swynck.model.User
 import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
 
-open class Onedrive(private val config: Config) {
+class Onedrive(private val config: Config) {
     companion object {
         private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
         private const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
@@ -38,7 +39,7 @@ open class Onedrive(private val config: Config) {
             .let { URI("https://login.live.com/oauth20_authorize.srf?$it") }
     }
 
-    open fun getAccessToken(authCode: String): AccessToken {
+    fun getAccessToken(authCode: String): AccessToken {
         val request = mapOf(
             "client_id" to clientId,
             "redirect_uri" to redirectUri,
@@ -57,14 +58,45 @@ open class Onedrive(private val config: Config) {
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    open fun getUser(accessToken: AccessToken): User {
+    fun getAccessToken(user: User): AccessToken {
+        val request = mapOf(
+            "client_id" to clientId,
+            "redirect_uri" to user.redirectUri,
+            "client_secret" to clientSecret,
+            "grant_type" to "refresh_token",
+            "refresh_token" to user.refreshToken
+        )
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
+        val client = OkHttp()
+        val response = client(request)
+        return if (response.status.successful) AccessToken(response)
+        else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
+    }
+
+    fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
         return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { client(it) }
             .let { DriveResource(it) }
             .let { it.owner.user }
-            .let { User(it.id, it.displayName, accessToken.refresh_token) }
+            .let { User(it.id, it.displayName, redirectUri, accessToken.refresh_token) }
+    }
+
+    fun getDelta(accessToken: AccessToken, nextLink: URI? = null): DeltaResponse {
+        val client = OkHttp()
+        nextLink ?: return getDelta(
+            accessToken,
+            URI("https://graph.microsoft.com/v1.0/me/drive/root/delta")
+        )
+        return Request(GET, nextLink.toString())
+            .header("Authorization", "bearer ${accessToken.access_token}")
+            .let { client(it) }
+            .let { DeltaResponse(it) }
     }
 }
 

@@ -15,12 +15,10 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
         if (getUser() != null) throw NotImplementedError("Multiple users")
         dataSourceFactory.sql2o().use {
             it.createQuery("""
-                INSERT INTO users (id, displayName, refreshToken)
-                VALUES (:id, :displayName, :refreshToken)
+                INSERT INTO users (id, displayName, refreshToken, redirectUri)
+                VALUES (:id, :displayName, :refreshToken, :redirectUri)
             """.trimIndent())
-                .addParameter("id", user.id)
-                .addParameter("displayName", user.displayName)
-                .addParameter("refreshToken", user.refreshToken)
+                .bind(user)
                 .executeUpdate()
         }
     }

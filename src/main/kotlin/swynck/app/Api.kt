@@ -21,8 +21,15 @@ object Api {
     ) = routes(
         "/ping" bind GET to { Response(OK).body("pong") },
         "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
-        "/onedrive/authcode" bind POST to { OnedriveCallback(onedrive, userRepository, it) }
+        "/onedrive/authcode" bind POST to { OnedriveCallback(onedrive, userRepository, it) },
+        "/files" bind GET to { GetFiles() }
     )
+}
+
+object GetFiles {
+    operator fun invoke(): Response {
+        return Response(OK).body("[]")
+    }
 }
 
 object OnedriveCallback {

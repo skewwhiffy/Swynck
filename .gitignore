@@ -14,6 +14,12 @@
 hs_err_pid*
 
 build/
+deltaDump/
 out/
 .idea/
 .gradle/
+bin/
+.classpath
+.project
+.settings
+Swynck.iml
