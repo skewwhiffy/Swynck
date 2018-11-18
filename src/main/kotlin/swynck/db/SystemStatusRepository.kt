@@ -1,6 +1,7 @@
 package swynck.db
 
 import org.sql2o.Query
+import swynck.util.executeAndFetch
 import kotlin.collections.MutableMap.MutableEntry
 
 class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
@@ -48,7 +49,15 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     override fun isEmpty() = size == 0
 
     override val entries: MutableSet<MutableEntry<String, String>>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = dataSourceFactory
+            .sql2o()
+            .use {
+                "SELECT * FROM SystemStatus"
+                    .let(it::createQuery)
+                    .executeAndFetch<SystemStatus>()
+                    .map { MutableEntry(it.key, it.value) }
+                    .toMutableSet()
+            }
     override val keys: MutableSet<String>
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
     override val values: MutableCollection<String>
