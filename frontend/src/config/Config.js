@@ -1,4 +1,4 @@
 export default {
-  "baseUrl": "http://localhost:38080",
+  "baseUrl": "",
   "logLevel": "Debug"
 };
