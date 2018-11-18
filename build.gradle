@@ -76,7 +76,6 @@ task buildFrontend(type: Exec) {
     print 'Building frontend...'
     workingDir 'frontend'
     commandLine 'sh', 'build.sh'
-    print 'Finished building frontend.'
 }
 
 build.dependsOn buildFrontend
