@@ -46,5 +46,39 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
         assertThat(newSize).isEqualTo(originalSize + 1)
     }
 
+    @Test
+    fun `remove element returns correct value`() {
+        val value = getNewString()
+        val key = getNewString()
+        map[key] = value
+
+        val firstReturnValue = map.remove(key)
+        val secondReturnValue = map.remove(key)
+
+        assertThat(firstReturnValue).isEqualTo(value)
+        assertThat(secondReturnValue).isNull()
+    }
+
+    @Test
+    fun `size decreases when removing elements`() {
+        val keys = (0..5).map { "${UUID.randomUUID()}"}
+        keys.forEach{ map[it] = it }
+        val originalSize = map.size
+
+        map.remove(keys[0])
+
+        assertThat(map.size).isEqualTo(originalSize - 1)
+    }
+
+    @Test
+    fun `containsKey is true only if key value is defined`() {
+        val key = getNewString()
+        assertThat(map.containsKey(key)).isFalse()
+
+        map[key] = getNewString()
+
+        assertThat(map.containsKey(key)).isTrue()
+    }
+
     private fun getNewString() = "${UUID.randomUUID()}"
 }

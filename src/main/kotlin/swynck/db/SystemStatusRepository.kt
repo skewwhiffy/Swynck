@@ -1,10 +1,13 @@
 package swynck.db
 
+import org.sql2o.Query
 import swynck.util.executeAndFetchFirst
 import kotlin.collections.MutableMap.MutableEntry
 
 class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     : MutableMap<String, String> {
+
+    private fun Query.addKey(key: String) = addParameter("key", key)
 
     override val size: Int
         get() = dataSourceFactory
@@ -15,9 +18,14 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
                     .executeAndFetchFirst()
             }
 
-    override fun containsKey(key: String): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun containsKey(key: String) = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT COUNT(*) FROM SystemStatus WHERE key = :key"
+                .let(it::createQuery)
+                .addKey(key)
+                .executeScalar(Int::class.java)
+        } > 0
 
     override fun containsValue(value: String): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -44,7 +52,7 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
 
     override fun put(key: String, value: String): String? {
         val pair = SystemStatus(key, value)
-        val returnValue = dataSourceFactory
+        return dataSourceFactory
             .sql2o()
             .run {
                 val returnValue = "SELECT value FROM systemStatus WHERE KEY = :key"
@@ -59,7 +67,6 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
 
                 returnValue
             }
-        return returnValue
     }
 
     override fun putAll(from: Map<out String, String>) {
@@ -67,7 +74,21 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     }
 
     override fun remove(key: String): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return dataSourceFactory
+            .sql2o()
+            .run {
+                val returnValue = "SELECT value FROM systemStatus WHERE KEY = :key"
+                    .let(::createQuery)
+                    .addKey(key)
+                    .executeScalar(String::class.java)
+
+                "DELETE FROM systemStatus WHERE KEY = :key"
+                    .let(::createQuery)
+                    .addKey(key)
+                    .executeUpdate()
+
+                returnValue
+            }
     }
 
     data class SystemStatus(
