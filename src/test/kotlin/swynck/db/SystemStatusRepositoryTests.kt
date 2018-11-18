@@ -128,5 +128,37 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
         assertThat(entries.map { it.key to it.value }.toSet()).isEqualTo(expected)
     }
 
+    @Test
+    fun `keys returns all keys`() {
+        val expected = (0..5)
+            .map { getNewString() }
+            .toSet()
+        map.clear()
+        val random = Random()
+        expected
+            .asSequence()
+            .sortedBy { random.nextInt() }
+            .forEach { map[it] = getNewString() }
+
+        val keys = map.keys
+
+        assertThat(keys.toSet()).isEqualTo(expected)
+    }
+
+    @Test
+    fun `values returns all values`() {
+        val expected = (0..5).map { getNewString() }
+        map.clear()
+        val random = Random()
+        expected
+            .asSequence()
+            .sortedBy { random.nextInt() }
+            .forEach { map[getNewString()] = it }
+
+        val values = map.values
+
+        assertThat(values.toSet()).isEqualTo(expected.toSet())
+    }
+
     private fun getNewString() = "${UUID.randomUUID()}"
 }

@@ -37,7 +37,7 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
                 .executeScalar(Int::class.java)
         } > 0
 
-    override fun get(key: String) = dataSourceFactory
+    override fun get(key: String): String? = dataSourceFactory
         .sql2o()
         .use {
             "SELECT value FROM SystemStatus WHERE key = :key"
@@ -55,13 +55,14 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
                 "SELECT * FROM SystemStatus"
                     .let(it::createQuery)
                     .executeAndFetch<SystemStatus>()
-                    .map { MutableEntry(it.key, it.value) }
                     .toMutableSet()
             }
+
     override val keys: MutableSet<String>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = entries.map { it.key }.toMutableSet()
+
     override val values: MutableCollection<String>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = entries.map { it.value }.toMutableList()
 
     override fun clear() {
         dataSourceFactory
@@ -73,24 +74,22 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
             }
     }
 
-    override fun put(key: String, value: String): String? {
-        val pair = SystemStatus(key, value)
-        return dataSourceFactory
-            .sql2o()
-            .run {
-                val returnValue = "SELECT value FROM systemStatus WHERE KEY = :key"
-                    .let(::createQuery)
-                    .bind(pair)
-                    .executeScalar(String::class.java)
+    override fun put(key: String, value: String): String? = dataSourceFactory
+        .sql2o()
+        .use {
+            val pair = SystemStatus(key, value)
+            val returnValue = "SELECT value FROM systemStatus WHERE KEY = :key"
+                .let(it::createQuery)
+                .bind(pair)
+                .executeScalar(String::class.java)
 
-                "MERGE INTO systemStatus (KEY, VALUE) KEY(KEY) VALUES (:key, :value)"
-                    .let(::createQuery)
-                    .bind(pair)
-                    .executeUpdate()
+            "MERGE INTO systemStatus (KEY, VALUE) KEY(KEY) VALUES (:key, :value)"
+                .let(it::createQuery)
+                .bind(pair)
+                .executeUpdate()
 
-                returnValue
-            }
-    }
+            returnValue
+        }
 
     override fun putAll(from: Map<out String, String>) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -115,7 +114,13 @@ class SystemStatusRepository(private val dataSourceFactory: DataSourceFactory)
     }
 
     data class SystemStatus(
-        val key: String,
-        val value: String
-    )
+        override val key: String,
+        override var value: String
+    ) : MutableEntry<String, String> {
+        override fun setValue(newValue: String): String {
+            val returnValue = value
+            value = newValue
+            return returnValue
+        }
+    }
 }
