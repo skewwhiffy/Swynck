@@ -6,6 +6,7 @@ import org.junit.Before
 import org.junit.Test
 import swynck.model.User
 import swynck.test.utils.TestConfig
+import java.net.URI
 import java.util.*
 
 class UserRepositoryTests {
@@ -53,6 +54,26 @@ class UserRepositoryTests {
         }
 
         assertThatThrownBy { userRepository.getUser() }.isInstanceOf(NotImplementedError::class.java)
+    }
+
+    @Test
+    fun `get next link for new user is null`() {
+        val user = newUser().also(userRepository::addUser)
+
+        val nextLink = userRepository.getNextLink(user)
+
+        assertThat(nextLink).isNull()
+    }
+
+    @Test
+    fun `can set next link`() {
+        val user = newUser().also(userRepository::addUser)
+        val nextLink = URI.create("http://localhost/${UUID.randomUUID()}")
+        userRepository.setNextLink(user, nextLink)
+
+        val retrieved = userRepository.getNextLink(user)
+
+        assertThat(retrieved).isEqualTo(nextLink)
     }
 
     private fun newUser() = User(
