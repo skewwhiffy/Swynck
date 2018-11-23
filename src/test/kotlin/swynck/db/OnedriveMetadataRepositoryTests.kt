@@ -3,10 +3,7 @@ package swynck.db
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import swynck.dto.onedrive.DeltaResponse
-import swynck.dto.onedrive.DriveItem
-import swynck.dto.onedrive.FolderItem
-import swynck.dto.onedrive.ParentReference
+import swynck.dto.onedrive.*
 import swynck.model.User
 import swynck.test.utils.TestConfig
 import java.util.*
@@ -88,6 +85,19 @@ class OnedriveMetadataRepositoryTests {
         assertThat(getChildFoldersReturned().map { it.name }).isEqualTo(childFolders.map { it.name })
     }
 
+    @Test
+    fun `can insert file in root`() {
+        val rootFolder = getRootFolderDriveItem(getNextId())
+        val file = getFileDriveItem(rootFolder, getNextId())
+        val delta = DeltaResponse(null, null, listOf(rootFolder, file))
+
+        metadataRepository.insert(delta)
+
+        val rootFolderReturned = metadataRepository.getRootFolder(user)
+        val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
+        assertThat(fileReturned).isEqualTo(File(file.id.split("!")[1].toInt(), file.name, file.file!!.mimeType))
+    }
+
     private fun getRootFolderDriveItem(id: Int) = DriveItem(
         "${user.id.toUpperCase()}!$id",
         "root",
@@ -101,6 +111,14 @@ class OnedriveMetadataRepositoryTests {
         "${UUID.randomUUID()}",
         null,
         FolderItem(0),
+        ParentReference(user.id, "${user.id.toUpperCase()}!${parentDriveItem.id.split("!")[1].toInt()}")
+    )
+
+    private fun getFileDriveItem(parentDriveItem: DriveItem, id: Int) = DriveItem(
+        "${user.id.toUpperCase()}!$id",
+        "${UUID.randomUUID()}",
+        FileItem("${UUID.randomUUID()}"),
+        null,
         ParentReference(user.id, "${user.id.toUpperCase()}!${parentDriveItem.id.split("!")[1].toInt()}")
     )
 }

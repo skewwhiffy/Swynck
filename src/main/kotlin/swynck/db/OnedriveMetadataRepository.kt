@@ -7,29 +7,30 @@ import swynck.util.executeAndFetch
 
 class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactory) {
     fun insert(delta: DeltaResponse) {
-        fun DriveItem.toFolderDao(): FolderDao {
-            val userId = parentReference.driveId
-            val id = this.id.split("!")[1].toInt()
-            val parentFolder = parentReference.id.split("!")[1].toInt()
-            return FolderDao(
-                id,
-                userId,
-                name,
-                if (parentFolder == 0) null else parentFolder
-            )
-        }
-
         val folders = delta
             .value
             .filter { it.folder != null }
             .map { it.toFolderDao() }
-        if (folders.size != delta.value.size) throw IllegalArgumentException("Some delta items not accounted for")
+        val files = delta
+            .value
+            .filter { it.file != null }
+            .map { it.toFileDao() }
+        if (folders.size + files.size != delta.value.size) throw IllegalArgumentException("Some delta items not accounted for")
         dataSourceFactory.sql2o().use { c ->
             folders
                 .map {
                     """
                     INSERT INTO folders (id, userId, name, parentFolder) VALUES (:id, :userId, :name, :parentFolder)
                 """.trimIndent()
+                        .let(c::createQuery)
+                        .bind(it)
+                }
+                .forEach { it.executeUpdate() }
+            files
+                .map {
+                    """
+                        INSERT INTO files (id, userId, name, mimeType, folder) VALUES (:id, :userId, :name, :mimeType, :folder)
+                    """.trimIndent()
                         .let(c::createQuery)
                         .bind(it)
                 }
@@ -58,6 +59,43 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
                 .executeAndFetch<FolderDao>()
         }
         .map { Folder(it.id, it.name) }
+
+    fun getFiles(user: User, folder: Folder): List<File> = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT * FROM files WHERE userId = :userId AND folder = :folder"
+                .let(it::createQuery)
+                .addParameter("userId", user.id)
+                .addParameter("folder", folder.id)
+                .executeAndFetch<FileDao>()
+        }
+        .map { File(it.id, it.name, it.mimeType) }
+
+    private fun DriveItem.toFolderDao() = FolderDao(
+        getId(),
+        getUserId(),
+        name,
+        getParentFolder()
+    )
+
+    private fun DriveItem.toFileDao() = FileDao(
+        getId(),
+        getUserId(),
+        name,
+        file!!.mimeType,
+        getParentFolder()!!
+    )
+
+    private fun DriveItem.getUserId() = parentReference.driveId
+
+    private fun DriveItem.getId() = id.extractId()
+
+    private fun DriveItem.getParentFolder() = parentReference
+        .id
+        .extractId()
+        .let { if (it == 0) null else it }
+
+    private fun String.extractId() = split("!")[1].toInt()
 }
 
 private data class FolderDao(
@@ -78,4 +116,10 @@ private data class FileDao(
 data class Folder(
     val id: Int,
     val name: String
+)
+
+data class File(
+    val id: Int,
+    val name: String,
+    val mimeType: String
 )
