@@ -12,6 +12,14 @@ import java.util.*
 class UserRepositoryTests {
     private lateinit var dataSourceFactory: DataSourceFactory
     private lateinit var userRepository: UserRepository
+    companion object {
+        fun newUser() = User(
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}"
+        )
+    }
 
     @Before
     fun init() {
@@ -44,10 +52,11 @@ class UserRepositoryTests {
             .map { newUser() }
         dataSourceFactory.sql2o().use {
             users.forEach { user ->
-                it.createQuery("""
+                """
                 INSERT INTO users (id, displayName, refreshToken, redirectUri)
                 VALUES (:id, :displayName, :refreshToken, :redirectUri)
-            """.trimIndent())
+            """.trimIndent()
+                    .let(it::createQuery)
                     .bind(user)
                     .executeUpdate()
             }
@@ -75,11 +84,4 @@ class UserRepositoryTests {
 
         assertThat(retrieved).isEqualTo(nextLink)
     }
-
-    private fun newUser() = User(
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}"
-        )
 }

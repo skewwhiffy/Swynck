@@ -1,6 +1,7 @@
 package swynck.db
 
 import swynck.model.User
+import swynck.util.executeAndFetch
 import java.net.URI
 
 class UserRepository(private val dataSourceFactory: DataSourceFactory) {
@@ -8,7 +9,7 @@ class UserRepository(private val dataSourceFactory: DataSourceFactory) {
         val users = dataSourceFactory.sql2o().use {
             "SELECT * FROM users"
                 .let(it::createQuery)
-                .executeAndFetch(User::class.java)
+                .executeAndFetch<User>()
         }
         if (users.size > 1) throw NotImplementedError("Multiple logged in users")
         return users.singleOrNull()
