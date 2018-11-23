@@ -54,17 +54,38 @@ class OnedriveMetadataRepositoryTests {
         val childFolders = (0..100)
             .map { getSubFolderDriveItem(rootFolder, getNextId()) }
         val folders = listOf(rootFolder, *childFolders.toTypedArray())
-        val delta = DeltaResponse(
-            null,
-            null,
-            folders
-        )
+        val delta = DeltaResponse(null, null, folders)
 
         metadataRepository.insert(delta)
 
         val rootFolderReturned = metadataRepository.getRootFolder(user)
         val childFoldersReturned = metadataRepository.getFolders(user, rootFolderReturned)
         assertThat(childFoldersReturned.map { it.name }.sorted()).isEqualTo(childFolders.map { it.name }.sorted())
+    }
+
+    @Test
+    fun `can insert folders to arbitrary depth`() {
+        val rootFolder = getRootFolderDriveItem(getNextId())
+        tailrec fun getChildFolders(prev: List<DriveItem> = listOf()): List<DriveItem> {
+            return if (prev.size > 100) prev
+            else getChildFolders(prev + getSubFolderDriveItem(
+                prev.lastOrNull() ?: rootFolder,
+                getNextId()
+            ))
+        }
+        val childFolders = getChildFolders()
+        val folders = listOf(rootFolder, *childFolders.toTypedArray())
+        val delta = DeltaResponse(null, null, folders)
+
+        metadataRepository.insert(delta)
+
+        val rootFolderReturned = metadataRepository.getRootFolder(user)
+        fun getChildFoldersReturned(prev: List<Folder> = listOf()): List<Folder> = metadataRepository
+            .getFolders(user, prev.lastOrNull() ?: rootFolderReturned)
+            .singleOrNull()
+            ?.let { getChildFoldersReturned(prev + it) }
+            ?:prev
+        assertThat(getChildFoldersReturned().map { it.name }).isEqualTo(childFolders.map { it.name })
     }
 
     private fun getRootFolderDriveItem(id: Int) = DriveItem(
