@@ -37,15 +37,27 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
         }
     }
 
-    fun getFolders(user: User) =
-        dataSourceFactory.sql2o().use {
-            "SELECT * FROM folders WHERE userId = :userId"
+    fun getRootFolder(user: User) = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT * FROM folders WHERE userId = :userId AND parentFolder IS NULL"
                 .let(it::createQuery)
                 .addParameter("userId", user.id)
                 .executeAndFetch<FolderDao>()
+                .single()
         }
-            .map { Folder(it.id, it.name) }
-            .toSet()
+        .let { Folder(it.id, it.name) }
+
+    fun getFolders(user: User, parentFolder: Folder) = dataSourceFactory
+        .sql2o()
+        .use {
+            "SELECT * FROM folders WHERE userId = :userId AND parentFolder = :parentFolder"
+                .let(it::createQuery)
+                .addParameter("userId", user.id)
+                .addParameter("parentFolder", parentFolder.id)
+                .executeAndFetch<FolderDao>()
+        }
+        .map { Folder(it.id, it.name) }
 }
 
 private data class FolderDao(
