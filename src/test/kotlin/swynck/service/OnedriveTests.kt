@@ -2,7 +2,6 @@ package swynck.service
 
 import org.assertj.core.api.Assertions.*
 import org.h2.jdbcx.JdbcDataSource
-import org.http4k.format.Jackson
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.BeforeClass
@@ -71,7 +70,6 @@ class OnedriveAccessTokenTests {
         fun getDeltas(soFar: Int, limit: Int, nextLink: URI?) {
             if (soFar >= limit) return
             val delta = onedrive.getDelta(accessToken, nextLink)
-            Jackson.asJsonString(delta.value).let(::println)
             delta.nextLink?:return
             getDeltas(soFar + delta.value.size, limit, delta.nextLink)
         }

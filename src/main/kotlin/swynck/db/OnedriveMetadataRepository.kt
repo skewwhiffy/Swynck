@@ -17,24 +17,25 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
             .map { it.toFileDao() }
         if (folders.size + files.size != delta.value.size) throw IllegalArgumentException("Some delta items not accounted for")
         dataSourceFactory.sql2o().use { c ->
-            folders
-                .map {
-                    """
-                    INSERT INTO folders (id, userId, name, parentFolder) VALUES (:id, :userId, :name, :parentFolder)
-                """.trimIndent()
-                        .let(c::createQuery)
-                        .bind(it)
-                }
-                .forEach { it.executeUpdate() }
-            files
-                .map {
-                    """
-                        INSERT INTO files (id, userId, name, mimeType, folder) VALUES (:id, :userId, :name, :mimeType, :folder)
-                    """.trimIndent()
-                        .let(c::createQuery)
-                        .bind(it)
-                }
-                .forEach { it.executeUpdate() }
+            val folderQuery = """
+INSERT INTO folders (id, userId, name, parentFolder) VALUES (:id, :userId, :name, :parentFolder)
+            """.trimIndent()
+                .let(c::createQuery)
+            folders.forEach { try {
+                folderQuery.bind(it).executeUpdate()
+            } catch(e: Exception) {
+                e.printStackTrace()
+                println("Folder with id ${it.id}")
+                throw e
+            }}//.addToBatch() }
+            //folderQuery.executeBatch()
+
+            val fileQuery = """
+INSERT INTO files (id, userId, name, mimeType, folder) VALUES (:id, :userId, :name, :mimeType, :folder)
+            """.trimIndent()
+                .let(c::createQuery)
+            files.forEach { fileQuery.bind(it).addToBatch() }
+            fileQuery.executeBatch()
         }
     }
 
