@@ -46,6 +46,31 @@ class OnedriveMetadataRepositoryTests {
     }
 
     @Test
+    fun `can update folder`() {
+        val rootFolderDriveItem = getRootFolderDriveItem(getNextId())
+        val childId = getNextId()
+        val childFolder = getSubFolderDriveItem(rootFolderDriveItem, childId)
+        val newChildFolder = getSubFolderDriveItem(rootFolderDriveItem, childId)
+        val delta = DeltaResponse(
+            null,
+            null,
+            listOf(rootFolderDriveItem, childFolder)
+        )
+        val secondDelta = DeltaResponse(
+            null,
+            null,
+            listOf(rootFolderDriveItem, newChildFolder)
+        )
+
+        metadataRepository.insert(delta)
+        metadataRepository.insert(secondDelta)
+
+        val rootFolder = metadataRepository.getRootFolder(user)
+        val folder = metadataRepository.getFolders(user, rootFolder).single()
+        assertThat(folder).isEqualTo(Folder(childId, newChildFolder.name))
+    }
+
+    @Test
     fun `can insert folders inside root`() {
         val rootFolder = getRootFolderDriveItem(getNextId())
         val childFolders = (0..100)
@@ -96,6 +121,23 @@ class OnedriveMetadataRepositoryTests {
         val rootFolderReturned = metadataRepository.getRootFolder(user)
         val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
         assertThat(fileReturned).isEqualTo(File(file.id.split("!")[1].toInt(), file.name, file.file!!.mimeType))
+    }
+
+    @Test
+    fun `can update file`() {
+        val rootFolder = getRootFolderDriveItem(getNextId())
+        val fileId = getNextId()
+        val file = getFileDriveItem(rootFolder, fileId)
+        val newFile = getFileDriveItem(rootFolder, fileId)
+        val delta = DeltaResponse(null, null, listOf(rootFolder, file))
+        val secondDelta = DeltaResponse(null, null, listOf(rootFolder, newFile))
+
+        metadataRepository.insert(delta)
+        metadataRepository.insert(secondDelta)
+
+        val rootFolderReturned = metadataRepository.getRootFolder(user)
+        val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
+        assertThat(fileReturned).isEqualTo(File(fileId, newFile.name, newFile.file!!.mimeType))
     }
 
     private fun getRootFolderDriveItem(id: Int) = DriveItem(

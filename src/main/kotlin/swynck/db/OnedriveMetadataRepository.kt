@@ -18,7 +18,7 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
         if (folders.size + files.size != delta.value.size) throw IllegalArgumentException("Some delta items not accounted for")
         dataSourceFactory.sql2o().use { c ->
             val folderQuery = """
-INSERT INTO folders (id, userId, name, parentFolder) VALUES (:id, :userId, :name, :parentFolder)
+MERGE INTO folders (id, userId, name, parentFolder) KEY (id) VALUES (:id, :userId, :name, :parentFolder)
             """.trimIndent()
                 .let(c::createQuery)
             folders.forEach { try {
@@ -31,7 +31,7 @@ INSERT INTO folders (id, userId, name, parentFolder) VALUES (:id, :userId, :name
             //folderQuery.executeBatch()
 
             val fileQuery = """
-INSERT INTO files (id, userId, name, mimeType, folder) VALUES (:id, :userId, :name, :mimeType, :folder)
+MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :userId, :name, :mimeType, :folder)
             """.trimIndent()
                 .let(c::createQuery)
             files.forEach { fileQuery.bind(it).addToBatch() }
