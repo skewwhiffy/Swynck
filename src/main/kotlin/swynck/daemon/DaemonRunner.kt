@@ -17,7 +17,9 @@ class DaemonRunner(private val clock: Clock) {
     fun add(task: DaemonTask) {
         val key = UUID.randomUUID()
         taskKeys[key] = task
-        val run = async { task.run() }
+        val run = async { while(true) {
+            task.runSingle()
+        } }
         taskRuns[key] = run
     }
 }

@@ -19,23 +19,22 @@ class FileDetailsSync(
         dependencies.oneDrive,
         dependencies.metadata
     )
-    override suspend fun run(): Nothing {
-        while (true) {
-            try {
-                val nextLink = userRepository.getNextLink(user)
-                val accessToken = onedrive.getAccessToken(user)
-                println("Getting delta with next link: $nextLink")
-                val delta = onedrive.getDelta(accessToken, nextLink)
-                println("Delta returned with ${delta.value.size} items")
-                metadata.insert(delta)
-                delta.nextLink?.let { userRepository.setNextLink(user, it) }
-                println("Next link returned: ${delta.nextLink}")
-                delay(1000)
-            } catch (e: Exception) {
-                println(e)
-                e.printStackTrace()
-                delay(5000)
-            }
+
+    override suspend fun runSingle() {
+        try {
+            val nextLink = userRepository.getNextLink(user)
+            val accessToken = onedrive.getAccessToken(user)
+            println("Getting delta with next link: $nextLink")
+            val delta = onedrive.getDelta(accessToken, nextLink)
+            println("Delta returned with ${delta.value.size} items")
+            metadata.insert(delta)
+            delta.nextLink?.let { userRepository.setNextLink(user, it) }
+            println("Next link returned: ${delta.nextLink}")
+            delay(1000)
+        } catch (e: Exception) {
+            println(e)
+            e.printStackTrace()
+            delay(5000)
         }
     }
 }

@@ -1,5 +1,5 @@
 package swynck.daemon.task
 
 interface DaemonTask {
-    suspend fun run(): Nothing
+    suspend fun runSingle(): Unit
 }

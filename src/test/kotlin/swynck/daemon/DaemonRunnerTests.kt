@@ -2,10 +2,15 @@ package swynck.daemon
 
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.experimental.delay
+import org.assertj.core.api.Assertions.fail
 import org.junit.Before
 import org.junit.Test
+import swynck.daemon.task.DaemonTask
 import java.time.Clock
 import java.time.Instant
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class DaemonRunnerTests {
     private var time = Instant.now()
@@ -18,26 +23,23 @@ class DaemonRunnerTests {
     }
 
     @Test
-    fun `runs task at correct interval`() {
-        /*
+    fun `runs task continuously`() {
         val runs = ConcurrentLinkedQueue<UUID>()
         val task = object : DaemonTask {
-            override suspend fun run(): Nothing {
+            override suspend fun runSingle() {
                 runs.add(UUID.randomUUID())
+                delay(5)
             }
         }
         runner.add(task)
 
-        time += Duration.ofMinutes(1)
-
         var lastRuns = 0
-        while (runs.size < 60) {
+        while (runs.size < 100) {
             println(lastRuns)
             val currentRuns = runs.size
-            //if (currentRuns <= lastRuns) fail("I've waited")
+            if (lastRuns > currentRuns) fail("I expected $currentRuns to be larger than $lastRuns")
             lastRuns = currentRuns
-            Thread.sleep(1000)
+            Thread.sleep(100)
         }
-        */
     }
 }
