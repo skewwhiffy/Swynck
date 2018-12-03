@@ -37,4 +37,6 @@ class FileDetailsSync(
             delay(5000)
         }
     }
+
+    override val restartPolicy = NoRestart
 }

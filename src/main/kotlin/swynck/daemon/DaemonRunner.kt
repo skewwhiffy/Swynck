@@ -13,13 +13,36 @@ class DaemonRunner(private val clock: Clock) {
 
     private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
     private val taskRuns = ConcurrentHashMap<UUID, Deferred<*>>()
+    private val taskStatus = ConcurrentHashMap<UUID, DaemonTaskStatus>()
 
     fun add(task: DaemonTask) {
         val key = UUID.randomUUID()
         taskKeys[key] = task
-        val run = async { while(true) {
-            task.runSingle()
-        } }
+        val run = async { runContinuously(task) }
         taskRuns[key] = run
+        taskStatus[key] = Running(listOf())
+    }
+
+    val tasks get() = taskKeys.values.toList()
+
+    fun statusOf(task: DaemonTask): DaemonTaskStatus? {
+        return taskKeys
+            .keys
+            .singleOrNull() { taskKeys[it] == task }
+            ?.let { taskStatus[it] }
+    }
+
+    private suspend fun runContinuously(task: DaemonTask): Nothing {
+        while(true) {
+            task.runSingle()
+        }
     }
 }
+
+interface DaemonTaskStatus {
+    val exceptions: List<Exception>
+}
+
+class Running(override val exceptions: List<Exception>) : DaemonTaskStatus
+
+class Errored(override val exceptions: List<Exception>) : DaemonTaskStatus
