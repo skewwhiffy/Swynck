@@ -4,6 +4,7 @@ import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import org.h2.mvstore.ConcurrentArrayList
 import swynck.daemon.task.DaemonTask
+import swynck.daemon.task.NoRestart
 import java.time.Clock
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -32,9 +33,24 @@ class DaemonRunner(private val clock: Clock) {
             ?.let { taskStatus[it] }
     }
 
-    private suspend fun runContinuously(task: DaemonTask): Nothing {
+    private suspend fun runContinuously(task: DaemonTask) {
         while(true) {
-            task.runSingle()
+            try {
+                task.runSingle()
+            } catch (e: Exception) {
+                when (task.restartPolicy) {
+                    NoRestart -> {
+                        val key = taskKeys.keys.single { taskKeys[it] == task }
+                        val currentStatus = taskStatus[key]
+                        taskStatus[key] = when (currentStatus) {
+                            is Running -> Errored(listOf(e))
+                            else -> TODO()
+                        }
+                        return
+                    }
+                    else -> TODO()
+                }
+            }
         }
     }
 }
