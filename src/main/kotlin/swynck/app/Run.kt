@@ -19,7 +19,7 @@ object Run {
         dependencies
             .userRepository
             .getUser()
-            ?.let { FileDetailsSync(it) }
+            ?.let { FileDetailsSync(it, dependencies) }
             ?.let { dependencies.daemonRunner.add(it) }
         println("Swynck started")
     }

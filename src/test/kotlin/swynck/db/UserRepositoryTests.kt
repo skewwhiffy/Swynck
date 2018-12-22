@@ -6,11 +6,20 @@ import org.junit.Before
 import org.junit.Test
 import swynck.model.User
 import swynck.test.utils.TestConfig
+import java.net.URI
 import java.util.*
 
 class UserRepositoryTests {
     private lateinit var dataSourceFactory: DataSourceFactory
     private lateinit var userRepository: UserRepository
+    companion object {
+        fun newUser() = User(
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}",
+            "${UUID.randomUUID()}"
+        )
+    }
 
     @Before
     fun init() {
@@ -43,10 +52,11 @@ class UserRepositoryTests {
             .map { newUser() }
         dataSourceFactory.sql2o().use {
             users.forEach { user ->
-                it.createQuery("""
+                """
                 INSERT INTO users (id, displayName, refreshToken, redirectUri)
                 VALUES (:id, :displayName, :refreshToken, :redirectUri)
-            """.trimIndent())
+            """.trimIndent()
+                    .let(it::createQuery)
                     .bind(user)
                     .executeUpdate()
             }
@@ -55,10 +65,23 @@ class UserRepositoryTests {
         assertThatThrownBy { userRepository.getUser() }.isInstanceOf(NotImplementedError::class.java)
     }
 
-    private fun newUser() = User(
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}"
-        )
+    @Test
+    fun `get next link for new user is null`() {
+        val user = newUser().also(userRepository::addUser)
+
+        val nextLink = userRepository.getNextLink(user)
+
+        assertThat(nextLink).isNull()
+    }
+
+    @Test
+    fun `can set next link`() {
+        val user = newUser().also(userRepository::addUser)
+        val nextLink = URI.create("http://localhost/${UUID.randomUUID()}")
+        userRepository.setNextLink(user, nextLink)
+
+        val retrieved = userRepository.getNextLink(user)
+
+        assertThat(retrieved).isEqualTo(nextLink)
+    }
 }

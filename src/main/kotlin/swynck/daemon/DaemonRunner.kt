@@ -4,51 +4,61 @@ import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import org.h2.mvstore.ConcurrentArrayList
 import swynck.daemon.task.DaemonTask
+import swynck.daemon.task.NoRestart
 import java.time.Clock
-import java.time.Duration
-import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ConcurrentSkipListSet
 
 class DaemonRunner(private val clock: Clock) {
-    private var runnerTask: Deferred<Nothing>? = null
-    private val running = ConcurrentLinkedQueue<Deferred<*>>()
     val exceptions = ConcurrentArrayList<Exception>()
 
     private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
-    private val tasksAndRuns = ConcurrentHashMap<UUID, ConcurrentSkipListSet<Instant>>()
+    private val taskRuns = ConcurrentHashMap<UUID, Deferred<*>>()
+    private val taskStatus = ConcurrentHashMap<UUID, DaemonTaskStatus>()
 
     fun add(task: DaemonTask) {
         val key = UUID.randomUUID()
         taskKeys[key] = task
-        tasksAndRuns[key] = ConcurrentSkipListSet()
-        @Synchronized
-        runnerTask = runnerTask ?: async { start() }
+        val run = async { runContinuously(task) }
+        taskRuns[key] = run
+        taskStatus[key] = Running(listOf())
     }
 
-    private suspend fun start(): Nothing {
-        while (true) {
-            running
-                .filter { it.isCompleted }
-                .let { running.removeAll(it) }
-            tasksAndRuns.keys.forEach { taskKey ->
-                val now = clock.instant()
-                val oneMinuteAgo = now.minus(Duration.ofMinutes(1))
-                tasksAndRuns[taskKey]!!
-                    .removeAll(tasksAndRuns[taskKey]!!.filter { it < oneMinuteAgo })
-                if (tasksAndRuns[taskKey]!!.size < taskKeys[taskKey]!!.runsPerMinute) {
-                    running.add(async {
-                        try {
-                            taskKeys[taskKey]!!.run()
-                        } catch (e: Exception) {
-                            exceptions.add(e)
+    val tasks get() = taskKeys.values.toList()
+
+    fun statusOf(task: DaemonTask): DaemonTaskStatus? {
+        return taskKeys
+            .keys
+            .singleOrNull() { taskKeys[it] == task }
+            ?.let { taskStatus[it] }
+    }
+
+    private suspend fun runContinuously(task: DaemonTask) {
+        while(true) {
+            try {
+                task.runSingle()
+            } catch (e: Exception) {
+                when (task.restartPolicy) {
+                    NoRestart -> {
+                        val key = taskKeys.keys.single { taskKeys[it] == task }
+                        val currentStatus = taskStatus[key]
+                        taskStatus[key] = when (currentStatus) {
+                            is Running -> Errored(listOf(e))
+                            else -> TODO()
                         }
-                    })
-                    tasksAndRuns[taskKey]!!.add(now)
+                        return
+                    }
+                    else -> TODO()
                 }
             }
         }
     }
 }
+
+interface DaemonTaskStatus {
+    val exceptions: List<Exception>
+}
+
+class Running(override val exceptions: List<Exception>) : DaemonTaskStatus
+
+class Errored(override val exceptions: List<Exception>) : DaemonTaskStatus
