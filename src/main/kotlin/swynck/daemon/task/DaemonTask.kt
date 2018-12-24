@@ -11,4 +11,4 @@ interface RestartPolicy
 
 object NoRestart : RestartPolicy
 
-class Restart(pause: Duration) : RestartPolicy
+class Restart(val pause: Duration) : RestartPolicy

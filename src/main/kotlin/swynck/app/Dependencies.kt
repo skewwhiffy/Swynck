@@ -11,7 +11,7 @@ import java.time.Clock
 class Dependencies(val config: Config = Config()) {
     private val clock = Clock.systemUTC()
     val dataSourceFactory = DataSourceFactory(config)
-    val daemonRunner = DaemonRunner(clock)
+    val daemonRunner = DaemonRunner()
     val metadata = OnedriveMetadataRepository(dataSourceFactory)
     val oneDrive = Onedrive(config)
     val userRepository = UserRepository(dataSourceFactory)
