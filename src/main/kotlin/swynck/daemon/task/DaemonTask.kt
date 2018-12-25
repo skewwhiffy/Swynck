@@ -3,7 +3,7 @@ package swynck.daemon.task
 import java.time.Duration
 
 interface DaemonTask {
-    suspend fun runSingle(): Unit
+    suspend fun runSingle()
     val restartPolicy: RestartPolicy
 }
 
