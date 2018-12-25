@@ -62,7 +62,7 @@ class FileDetailsSyncTests {
             }
             items += delta.value.size
             onedriveMetadata.insert(delta)
-            if (items > 40000) {
+            if (items > 1000) {
                 println("$items items: stopping")
                 break
             }
