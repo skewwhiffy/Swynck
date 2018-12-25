@@ -1,7 +1,6 @@
 package swynck.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import swynck.dto.onedrive.*
 import swynck.model.User
@@ -9,25 +8,21 @@ import swynck.test.utils.TestConfig
 import java.util.*
 
 class OnedriveMetadataRepositoryTests {
-    private lateinit var dataSourceFactory: DataSourceFactory
-    private lateinit var metadataRepository: OnedriveMetadataRepository
-    private lateinit var userRepository: UserRepository
-    private lateinit var user: User
+    private val dataSourceFactory = TestConfig().let(::DataSourceFactory)
+    private val metadataRepository = OnedriveMetadataRepository(dataSourceFactory)
+    private val userRepository = UserRepository(dataSourceFactory)
+    private val user: User
 
     companion object {
         private var lastId = 0
         fun getNextId() = ++lastId
     }
 
-    @Before
-    fun init() {
-        val config = TestConfig()
-        dataSourceFactory = DataSourceFactory(config)
+    init {
         Migrations(dataSourceFactory).run()
-        metadataRepository = OnedriveMetadataRepository(dataSourceFactory)
-        userRepository = UserRepository(dataSourceFactory)
-        user = UserRepositoryTests.newUser()
-        userRepository.addUser(user)
+        user = UserRepositoryTests
+            .newUser()
+            .also(userRepository::addUser)
     }
 
     @Test

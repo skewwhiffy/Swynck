@@ -1,7 +1,6 @@
 package swynck.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import swynck.test.utils.TestConfig
 import java.util.*
@@ -16,12 +15,7 @@ class SystemStatusRepositoryTests : MapTestBase({
 class MapTests : MapTestBase({ mutableMapOf() })
 
 abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>) {
-    lateinit var map: MutableMap<String, String>
-
-    @Before
-    fun init() {
-        map = makeMap()
-    }
+    private val map = makeMap()
 
     @Test
     fun `put element returns correct value`() {
