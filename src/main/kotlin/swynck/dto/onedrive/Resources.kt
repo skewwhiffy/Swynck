@@ -24,6 +24,7 @@ data class DriveItem(
     val name: String,
     val file: FileItem?,
     val folder: FolderItem?,
+    val `package`: PackageItem?,
     val parentReference: ParentReference
 )
 
@@ -33,6 +34,10 @@ data class FileItem(
 
 data class FolderItem(
     val childCount: Int
+)
+
+data class PackageItem(
+    val type: String
 )
 
 data class ParentReference(

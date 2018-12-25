@@ -96,6 +96,7 @@ class Onedrive(private val config: Config) {
         return Request(GET, nextLink.toString())
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { client(it) }
+            .also { println(it.bodyString()) }
             .let { DeltaResponse(it) }
     }
 }

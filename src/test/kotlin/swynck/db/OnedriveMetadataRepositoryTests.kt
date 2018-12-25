@@ -140,6 +140,7 @@ class OnedriveMetadataRepositoryTests {
         "root",
         null,
         FolderItem(0),
+        null,
         ParentReference(user.id, "${user.id.toUpperCase()}!0")
     )
 
@@ -148,6 +149,7 @@ class OnedriveMetadataRepositoryTests {
         "${UUID.randomUUID()}",
         null,
         FolderItem(0),
+        null,
         ParentReference(user.id, "${user.id.toUpperCase()}!${parentDriveItem.id.split("!")[1].toInt()}")
     )
 
@@ -155,6 +157,7 @@ class OnedriveMetadataRepositoryTests {
         "${user.id.toUpperCase()}!$id",
         "${UUID.randomUUID()}",
         FileItem("${UUID.randomUUID()}"),
+        null,
         null,
         ParentReference(user.id, "${user.id.toUpperCase()}!${parentDriveItem.id.split("!")[1].toInt()}")
     )
