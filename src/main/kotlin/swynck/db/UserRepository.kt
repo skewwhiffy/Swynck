@@ -42,7 +42,9 @@ VALUES (:id, :displayName, :refreshToken, :redirectUri)
         dataSourceFactory
             .sql2o()
             .use {
-                "INSERT INTO userSyncStatus (userId, nextLink) VALUES (:userId, :nextLink)"
+                """
+MERGE INTO userSyncStatus (userId, nextLink) KEY (userId) VALUES (:userId, :nextLink)
+                """.trimIndent()
                     .let(it::createQuery)
                     .addParameter("userId", user.id)
                     .addParameter("nextLink", nextLink.toString())

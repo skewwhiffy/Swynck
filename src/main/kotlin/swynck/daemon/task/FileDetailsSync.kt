@@ -6,6 +6,8 @@ import swynck.db.OnedriveMetadataRepository
 import swynck.db.UserRepository
 import swynck.model.User
 import swynck.service.Onedrive
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 class FileDetailsSync(
     val user: User,
@@ -13,6 +15,11 @@ class FileDetailsSync(
     val onedrive: Onedrive,
     private val metadata: OnedriveMetadataRepository
 ) : DaemonTask {
+    companion object {
+        private val updatingDelay = Duration.ofSeconds(1)!!
+        private val pollingInterval = Duration.ofSeconds(15)!!
+        private suspend fun delay(duration: Duration) = delay(duration.toNanos(), TimeUnit.NANOSECONDS)
+    }
     constructor(user: User, dependencies: Dependencies) : this(
         user,
         dependencies.userRepository,
@@ -24,17 +31,23 @@ class FileDetailsSync(
         try {
             val nextLink = userRepository.getNextLink(user)
             val accessToken = onedrive.getAccessToken(user)
-            println("Getting delta with next link: $nextLink")
             val delta = onedrive.getDelta(accessToken, nextLink)
             println("Delta returned with ${delta.value.size} items")
             metadata.insert(delta)
-            delta.nextLink?.let { userRepository.setNextLink(user, it) }
-            println("Next link returned: ${delta.nextLink}")
-            delay(1000)
+            delta.nextLink?.let {
+                userRepository.setNextLink(user, it)
+                println("Next link returned: $it")
+                delay(updatingDelay)
+            }
+            delta.deltaLink?.let {
+                userRepository.setNextLink(user, it)
+                println("Delta link returned: $it")
+                delay(pollingInterval)
+            }
         } catch (e: Exception) {
             println(e)
             e.printStackTrace()
-            delay(5000)
+            delay(pollingInterval)
         }
     }
 

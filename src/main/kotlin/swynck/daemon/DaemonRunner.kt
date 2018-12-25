@@ -2,14 +2,16 @@ package swynck.daemon
 
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
 import org.h2.mvstore.ConcurrentArrayList
 import swynck.daemon.task.DaemonTask
 import swynck.daemon.task.NoRestart
-import java.time.Clock
+import swynck.daemon.task.Restart
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
-class DaemonRunner(private val clock: Clock) {
+class DaemonRunner {
     val exceptions = ConcurrentArrayList<Exception>()
 
     private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
@@ -29,7 +31,7 @@ class DaemonRunner(private val clock: Clock) {
     fun statusOf(task: DaemonTask): DaemonTaskStatus? {
         return taskKeys
             .keys
-            .singleOrNull() { taskKeys[it] == task }
+            .singleOrNull { taskKeys[it] == task }
             ?.let { taskStatus[it] }
     }
 
@@ -38,27 +40,42 @@ class DaemonRunner(private val clock: Clock) {
             try {
                 task.runSingle()
             } catch (e: Exception) {
-                when (task.restartPolicy) {
+                val policy = task.restartPolicy
+                when (policy) {
                     NoRestart -> {
                         val key = taskKeys.keys.single { taskKeys[it] == task }
                         val currentStatus = taskStatus[key]
                         taskStatus[key] = when (currentStatus) {
                             is Running -> Errored(listOf(e))
-                            else -> TODO()
+                            else -> throw InvalidStateException
                         }
                         return
                     }
-                    else -> TODO()
+                    is Restart -> {
+                        val key = taskKeys.keys.single { taskKeys[it] == task }
+                        val currentStatus = taskStatus[key]
+                        taskStatus[key] = when (currentStatus) {
+                            is Running -> RunningWithErrors(listOf(e))
+                            is RunningWithErrors -> RunningWithErrors(currentStatus.exceptions + e)
+                            else -> throw InvalidStateException
+                        }
+                        delay(policy.pause.toMillis(), TimeUnit.MILLISECONDS)
+                    }
+                    else -> throw InvalidStateException
                 }
             }
         }
     }
 }
 
+object InvalidStateException : Exception()
+
 interface DaemonTaskStatus {
     val exceptions: List<Exception>
 }
 
 class Running(override val exceptions: List<Exception>) : DaemonTaskStatus
+
+class RunningWithErrors(override val exceptions: List<Exception>) : DaemonTaskStatus
 
 class Errored(override val exceptions: List<Exception>) : DaemonTaskStatus

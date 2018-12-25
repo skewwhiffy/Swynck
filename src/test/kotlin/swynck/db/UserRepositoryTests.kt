@@ -2,7 +2,6 @@ package swynck.db
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
 import swynck.model.User
 import swynck.test.utils.TestConfig
@@ -10,8 +9,9 @@ import java.net.URI
 import java.util.*
 
 class UserRepositoryTests {
-    private lateinit var dataSourceFactory: DataSourceFactory
-    private lateinit var userRepository: UserRepository
+    private val dataSourceFactory = TestConfig().let(::DataSourceFactory)
+    private val userRepository = UserRepository(dataSourceFactory)
+
     companion object {
         fun newUser() = User(
             "${UUID.randomUUID()}",
@@ -21,12 +21,8 @@ class UserRepositoryTests {
         )
     }
 
-    @Before
-    fun init() {
-        val config = TestConfig()
-        dataSourceFactory = DataSourceFactory(config)
+    init {
         Migrations(dataSourceFactory).run()
-        userRepository = UserRepository(dataSourceFactory)
     }
 
     @Test

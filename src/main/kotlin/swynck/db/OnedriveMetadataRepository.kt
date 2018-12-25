@@ -9,13 +9,19 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
     fun insert(delta: DeltaResponse) {
         val folders = delta
             .value
-            .filter { it.folder != null }
+            .filter { it.folder != null || it.`package` != null }
             .map { it.toFolderDao() }
         val files = delta
             .value
             .filter { it.file != null }
             .map { it.toFileDao() }
-        if (folders.size + files.size != delta.value.size) throw IllegalArgumentException("Some delta items not accounted for")
+        if (folders.size + files.size != delta.value.size) {
+            val example = delta
+                .value
+                .filter { it.folder == null }
+                .firstOrNull { it.file == null }
+            throw IllegalArgumentException("Some delta items not accounted for: $example")
+        }
         dataSourceFactory.sql2o().use { c ->
             val folderQuery = """
 MERGE INTO folders (id, userId, name, parentFolder) KEY (id) VALUES (:id, :userId, :name, :parentFolder)
