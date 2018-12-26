@@ -8,6 +8,7 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
 import org.junit.Test
+import swynck.app.api.Api
 import swynck.db.Migrations
 import swynck.model.User
 import swynck.service.AccessToken
@@ -29,7 +30,7 @@ class OneDriveCallbackTests {
         val id = "${UUID.randomUUID()}"
         val displayName = "${UUID.randomUUID()}"
         val oneDrive = mockk<Onedrive>()
-        val api = Api(dependencies.userRepository, oneDrive)
+        val api = Api(dependencies.userRepository, dependencies.metadata, oneDrive)
         val redirectUri = "${UUID.randomUUID()}.com"
         every { oneDrive.getAccessToken(authCode) } returns accessToken
         every { oneDrive.getUser(accessToken) } returns

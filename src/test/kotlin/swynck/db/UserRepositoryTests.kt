@@ -3,23 +3,14 @@ package swynck.db
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
-import swynck.model.User
 import swynck.test.utils.TestConfig
+import swynck.test.utils.TestData
 import java.net.URI
 import java.util.*
 
 class UserRepositoryTests {
     private val dataSourceFactory = TestConfig().let(::DataSourceFactory)
     private val userRepository = UserRepository(dataSourceFactory)
-
-    companion object {
-        fun newUser() = User(
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}",
-            "${UUID.randomUUID()}"
-        )
-    }
 
     init {
         Migrations(dataSourceFactory).run()
@@ -34,7 +25,7 @@ class UserRepositoryTests {
 
     @Test
     fun `add user then get user returns same user`() {
-        val user = newUser()
+        val user = TestData.randomUser()
         userRepository.addUser(user)
 
         val returned = userRepository.getUser()
@@ -45,7 +36,7 @@ class UserRepositoryTests {
     @Test
     fun `get user with multiple users throws`() {
         val users = (0..1)
-            .map { newUser() }
+            .map { TestData.randomUser() }
         dataSourceFactory.sql2o().use {
             users.forEach { user ->
                 """
@@ -63,7 +54,7 @@ class UserRepositoryTests {
 
     @Test
     fun `get next link for new user is null`() {
-        val user = newUser().also(userRepository::addUser)
+        val user = TestData.randomUser().also(userRepository::addUser)
 
         val nextLink = userRepository.getNextLink(user)
 
@@ -72,7 +63,7 @@ class UserRepositoryTests {
 
     @Test
     fun `can set next link`() {
-        val user = newUser().also(userRepository::addUser)
+        val user = TestData.randomUser().also(userRepository::addUser)
         val nextLink = URI.create("http://localhost/${UUID.randomUUID()}")
         userRepository.setNextLink(user, nextLink)
 

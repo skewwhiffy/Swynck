@@ -3,7 +3,6 @@ package swynck.daemon
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay
-import org.h2.mvstore.ConcurrentArrayList
 import swynck.daemon.task.DaemonTask
 import swynck.daemon.task.NoRestart
 import swynck.daemon.task.Restart
@@ -11,14 +10,21 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-class DaemonRunner {
-    val exceptions = ConcurrentArrayList<Exception>()
+interface DaemonRunner {
+    companion object {
+        operator fun invoke() = DaemonRunnerImpl()
+    }
 
+    fun add(task: DaemonTask)
+    fun statusOf(task: DaemonTask): DaemonTaskStatus?
+}
+
+class DaemonRunnerImpl : DaemonRunner {
     private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
     private val taskRuns = ConcurrentHashMap<UUID, Deferred<*>>()
     private val taskStatus = ConcurrentHashMap<UUID, DaemonTaskStatus>()
 
-    fun add(task: DaemonTask) {
+    override fun add(task: DaemonTask) {
         val key = UUID.randomUUID()
         taskKeys[key] = task
         val run = async { runContinuously(task) }
@@ -26,9 +32,7 @@ class DaemonRunner {
         taskStatus[key] = Running(listOf())
     }
 
-    val tasks get() = taskKeys.values.toList()
-
-    fun statusOf(task: DaemonTask): DaemonTaskStatus? {
+    override fun statusOf(task: DaemonTask): DaemonTaskStatus? {
         return taskKeys
             .keys
             .singleOrNull { taskKeys[it] == task }
