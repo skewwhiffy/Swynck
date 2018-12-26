@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Tabs, Tab } from "react-bootstrap";
 import Header from "./component/header/Header";
-import Files from "./component/files/Files";
+import Items from "./component/items/Items";
 import "./app.css";
 
 class App extends Component {
@@ -12,7 +12,7 @@ class App extends Component {
         <div className="content">
           <Tabs id="tabs" defaultActiveKey="files">
             <Tab eventKey="files" title="Files">
-              <Files/>
+              <Items/>
             </Tab>
             <Tab eventKey="music" title="Music">
               <p>TODO: Music</p>
