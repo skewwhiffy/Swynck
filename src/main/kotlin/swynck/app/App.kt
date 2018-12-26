@@ -14,18 +14,13 @@ import org.http4k.routing.routes
 import org.http4k.routing.static
 import swynck.app.api.Api
 
-object App {
-    operator fun invoke(dependencies: Dependencies): RoutingHttpHandler {
-        return CorsPolicy(
-            listOf("*"),
-            listOf(),
-            Method.values().toList()
-        )
-            .run { Cors(this) }
-            .then(routes(
-                "/ping" bind GET to { Response(OK).body("pong") },
-                "/api" bind Api(dependencies),
-                static(Classpath("www"))
-            ))
+class App(dependencies: Dependencies) : RoutingHttpHandler by cors.then(routes(
+    "/ping" bind GET to { Response(OK).body("pong") },
+    "/api" bind Api(dependencies),
+    static(Classpath("www"))
+)) {
+    companion object {
+        val policy = CorsPolicy(listOf("*"), listOf(), Method.values().toList())
+        val cors = Cors(policy)
     }
 }
