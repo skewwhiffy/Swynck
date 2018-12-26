@@ -27,14 +27,8 @@ class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactor
 MERGE INTO folders (id, userId, name, parentFolder) KEY (id) VALUES (:id, :userId, :name, :parentFolder)
             """.trimIndent()
                 .let(c::createQuery)
-            folders.forEach { try {
-                folderQuery.bind(it).executeUpdate()
-            } catch(e: Exception) {
-                e.printStackTrace()
-                println("Folder with id ${it.id}")
-                throw e
-            }}//.addToBatch() }
-            //folderQuery.executeBatch()
+            folders.forEach { folderQuery.bind(it).addToBatch() }
+            folderQuery.executeBatch()
 
             val fileQuery = """
 MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :userId, :name, :mimeType, :folder)

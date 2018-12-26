@@ -12,10 +12,7 @@ object Run {
         println("Applying migrations")
         Migrations(dependencies.dataSourceFactory).run()
         println("Starting server on port ${dependencies.config.port()}")
-        App(
-            dependencies.userRepository,
-            dependencies.oneDrive
-        ).asServer(Undertow(dependencies.config.port())).start()
+        App(dependencies).asServer(Undertow(dependencies.config.port())).start()
         dependencies
             .userRepository
             .getUser()

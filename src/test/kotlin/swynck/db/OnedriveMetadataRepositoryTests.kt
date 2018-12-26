@@ -5,6 +5,7 @@ import org.junit.Test
 import swynck.dto.onedrive.*
 import swynck.model.User
 import swynck.test.utils.TestConfig
+import swynck.test.utils.TestData
 import java.util.*
 
 class OnedriveMetadataRepositoryTests {
@@ -20,8 +21,8 @@ class OnedriveMetadataRepositoryTests {
 
     init {
         Migrations(dataSourceFactory).run()
-        user = UserRepositoryTests
-            .newUser()
+        user = TestData
+            .randomUser()
             .also(userRepository::addUser)
     }
 

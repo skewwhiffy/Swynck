@@ -26,8 +26,8 @@ export default class Api {
       .then(it => it.json())
   }
 
-  getFiles() {
-    return fetch(this.getRequestUrl("/api/files"))
+  getItems() {
+    return fetch(this.getRequestUrl("/api/items"))
       .then(this.handleNotOk)
       .then(it => it.json());
   }
