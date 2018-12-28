@@ -18,13 +18,13 @@ echo Compiling JavaScript, an interpreted language...
 ./yarn.sh build
 
 echo Embedding static www into Kotlin solution...
-mkdir -p ../src/main/resources/www
-rm -fr ../src/main/resources/www
-mv build ../src/main/resources/www
+mkdir -p ../backend/src/main/resources/www
+rm -fr ../backend/src/main/resources/www
+mv build ../backend/src/main/resources/www
 
 echo Creating test.js for testing...
-touch ../src/main/resources/www/static/test.js
-echo $(date) > ../src/main/resources/www/static/test.js
+touch ../backend/src/main/resources/www/static/test.js
+echo $(date) > ../backend/src/main/resources/www/static/test.js
 echo Restoring original config.js...
 rm src/config/Config.js
 mv originalConfig.js src/config/Config.js
