@@ -13,11 +13,11 @@ import swynck.test.utils.TestConfig
 
 class CurrentUserTests {
     private val config = TestConfig()
-    private val dependencies = Dependencies(config)
+    private val dependencies = DependenciesImpl(config)
     private val api = Api(dependencies)
 
     init {
-        Migrations(dependencies.dataSourceFactory).run()
+        Migrations(dependencies).run()
     }
 
     @Test

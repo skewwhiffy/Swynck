@@ -1,21 +1,27 @@
-package swynck.app
+package swynck.app.api.items
 
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
-import swynck.app.api.Api
-import swynck.app.api.GetItemsResponse
-import swynck.dto.onedrive.*
+import swynck.dto.onedrive.DeltaResponse
+import swynck.dto.onedrive.DriveItem
+import swynck.dto.onedrive.FileItem
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference
+import swynck.test.utils.hasPingEndpoint
 
-class ApiTests {
+class ItemsRoutesTests {
     private val testData = TestData()
     private val dependencies = TestDependencies()
-    private val api = Api(dependencies)
+    private val itemRoutes = ItemsRoutes(dependencies)
+
+    @Test
+    fun `ping endpoint works`() {
+        assertThat(itemRoutes).hasPingEndpoint()
+    }
 
     @Test
     fun `get items returns files`() {
@@ -39,12 +45,11 @@ class ApiTests {
         )
         dependencies.metadata.insert(deltaResponse)
 
-        val result = api(Request(Method.GET, "/items"))
+        val result = itemRoutes(Request(Method.GET, "/"))
 
         assertThat(result.status).isEqualTo(OK)
         println(result.bodyString())
         val deserializedResponse = GetItemsResponse.lens(result)
-        assertThat(deserializedResponse.files.map { it.name })
-            .isEqualTo(filenames)
+        assertThat(deserializedResponse.files.map { it.name }).isEqualTo(filenames)
     }
 }

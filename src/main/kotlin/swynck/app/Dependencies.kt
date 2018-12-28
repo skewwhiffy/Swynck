@@ -7,12 +7,24 @@ import swynck.db.OnedriveMetadataRepository
 import swynck.db.UserRepository
 import swynck.service.Onedrive
 
-open class Dependencies(
-    val config: Config = Config(),
-    val daemonRunner: DaemonRunner = DaemonRunner()
-) {
-    val dataSourceFactory = DataSourceFactory(config)
-    val metadata = OnedriveMetadataRepository(dataSourceFactory)
-    val oneDrive = Onedrive(config)
-    val userRepository = UserRepository(dataSourceFactory)
+interface Dependencies {
+    companion object {
+        operator fun invoke() = DependenciesImpl()
+    }
+    val config: Config
+    val dataSourceFactory: DataSourceFactory
+    val daemonRunner: DaemonRunner
+    val metadata: OnedriveMetadataRepository
+    val oneDrive: Onedrive
+    val userRepository: UserRepository
+}
+
+class DependenciesImpl(
+    override val config: Config = Config(),
+    override val daemonRunner: DaemonRunner = DaemonRunner()
+): Dependencies {
+    override val dataSourceFactory = DataSourceFactory(config)
+    override val metadata = OnedriveMetadataRepository(dataSourceFactory)
+    override val oneDrive = Onedrive(config)
+    override val userRepository = UserRepository(dataSourceFactory)
 }

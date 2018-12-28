@@ -4,7 +4,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.experimental.delay
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 import swynck.daemon.task.DaemonTask
 import swynck.daemon.task.NoRestart
@@ -70,7 +69,7 @@ class DaemonRunnerTests {
         var lastRuns = 0
         while (numberOfRuns < totalRuns) {
             val currentRuns = numberOfRuns
-            if (lastRuns > currentRuns) fail("I expected $currentRuns to be larger than $lastRuns")
+            assertThat(lastRuns).isLessThanOrEqualTo(currentRuns)
             lastRuns = currentRuns
             Thread.sleep(100)
         }

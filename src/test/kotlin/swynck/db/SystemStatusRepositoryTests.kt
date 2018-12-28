@@ -2,19 +2,18 @@ package swynck.db
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import swynck.test.utils.TestConfig
+import swynck.test.utils.TestDependencies
 import java.util.*
 
 class SystemStatusRepositoryTests : MapTestBase({
-    val config = TestConfig()
-    val dataSourceFactory = DataSourceFactory(config)
-    Migrations(dataSourceFactory).run()
-    SystemStatusRepository(dataSourceFactory)
+    val dependencies = TestDependencies()
+    Migrations(dependencies).run()
+    SystemStatusRepository(dependencies.dataSourceFactory)
 })
 
 class MapTests : MapTestBase({ mutableMapOf() })
 
-abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>) {
+abstract class MapTestBase(makeMap: () -> MutableMap<String, String>) {
     private val map = makeMap()
 
     @Test

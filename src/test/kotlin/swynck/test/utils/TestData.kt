@@ -35,6 +35,7 @@ class TestData {
     class Onedrive(user: User) {
         private val driveId = user.id
         fun randomDriveItemId() = "$driveId!${uniqueInt()}"
+
         val rootFolder = DriveItem(
             randomDriveItemId(),
             "root",
