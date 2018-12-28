@@ -3,20 +3,19 @@ package swynck.app.api
 import org.http4k.core.Body
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
+import swynck.app.Dependencies
 import swynck.config.Json.auto
-import swynck.db.UserRepository
-import swynck.service.Onedrive
 import java.net.URI
 
 object GetCurrentUser {
     operator fun invoke(
-        userRepository: UserRepository,
-        oneDrive: Onedrive
-    ) = userRepository
+        dependencies: Dependencies
+    ) = dependencies
+        .userRepository
         .getUser()
         .let {
             when (it) {
-                null -> Response(OK).withBody(UserNotFound(oneDrive.authenticationUrl()))
+                null -> Response(OK).withBody(UserNotFound(dependencies.oneDrive.authenticationUrl()))
                 else -> Response(OK).withBody(UserFound(it.displayName))
             }
         }

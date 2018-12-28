@@ -6,11 +6,11 @@ import kotlinx.coroutines.experimental.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
-import swynck.app.Dependencies
 import swynck.app.Run
 
 class StartServerForTesting : AutoCloseable {
-    val dependencies = Dependencies(TestConfig())
+    val dependencies = TestDependencies()
+
     private val server = async {
         try {
             Run(dependencies)

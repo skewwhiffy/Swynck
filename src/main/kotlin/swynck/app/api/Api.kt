@@ -8,25 +8,12 @@ import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import swynck.app.Dependencies
-import swynck.db.OnedriveMetadataRepository
-import swynck.db.UserRepository
-import swynck.service.Onedrive
 
-class Api(
-    userRepository: UserRepository,
-    metadataRepository: OnedriveMetadataRepository,
-    onedrive: Onedrive
-): RoutingHttpHandler by routes(
+class Api(dependencies: Dependencies): RoutingHttpHandler by routes(
     "/ping" bind GET to { Response(OK).body("pong") },
-    "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
-    "/onedrive/authcode" bind POST to { OnedriveCallback(onedrive, userRepository, it) },
-    "items" bind ItemsRoutes(userRepository, metadataRepository),
+    "/user/me" bind GET to { GetCurrentUser(dependencies) },
+    "/onedrive/authcode" bind POST to { OnedriveCallback(dependencies.oneDrive, dependencies.userRepository, it) },
+    "items" bind ItemsRoutes(dependencies.userRepository, dependencies.metadata),
     //"/items" bind GET to { ItemsRoutes(userRepository, metadataRepository, it) },
     "/music" bind GET to { GetMusic(it) }
-) {
-    constructor(dependencies: Dependencies): this(
-        dependencies.userRepository,
-        dependencies.metadata,
-        dependencies.oneDrive
-    )
-}
+)
