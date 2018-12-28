@@ -20,7 +20,9 @@ class Api(
     "/ping" bind GET to { Response(OK).body("pong") },
     "/user/me" bind GET to { GetCurrentUser(userRepository, onedrive) },
     "/onedrive/authcode" bind POST to { OnedriveCallback(onedrive, userRepository, it) },
-    "/items" bind GET to { GetItems(userRepository, metadataRepository, it) }
+    "items" bind ItemsRoutes(userRepository, metadataRepository),
+    //"/items" bind GET to { ItemsRoutes(userRepository, metadataRepository, it) },
+    "/music" bind GET to { GetMusic(it) }
 ) {
     constructor(dependencies: Dependencies): this(
         dependencies.userRepository,

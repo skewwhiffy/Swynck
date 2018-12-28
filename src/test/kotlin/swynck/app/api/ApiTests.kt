@@ -1,12 +1,10 @@
-package swynck.app
+package swynck.app.api
 
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
-import swynck.app.api.Api
-import swynck.app.api.GetItemsResponse
 import swynck.dto.onedrive.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
@@ -16,6 +14,22 @@ class ApiTests {
     private val testData = TestData()
     private val dependencies = TestDependencies()
     private val api = Api(dependencies)
+
+    @Test
+    fun `ping endpoint works`() {
+        val result = api(Request(Method.GET, "/ping"))
+
+        assertThat(result.status).isEqualTo(OK)
+        assertThat(result.bodyString()).isEqualTo("pong")
+    }
+
+    @Test
+    fun `ItemsRoutes is wired in correctly`() {
+        val result = api(Request(Method.GET, "/items/ping"))
+
+        assertThat(result.status).isEqualTo(OK)
+        assertThat(result.bodyString()).isEqualTo("pong")
+    }
 
     @Test
     fun `get items returns files`() {

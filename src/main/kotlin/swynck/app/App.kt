@@ -20,7 +20,7 @@ class App(dependencies: Dependencies) : RoutingHttpHandler by cors.then(routes(
     static(Classpath("www"))
 )) {
     companion object {
-        val policy = CorsPolicy(listOf("*"), listOf(), Method.values().toList())
+        private val policy = CorsPolicy(listOf("*"), listOf(), Method.values().toList())
         val cors = Cors(policy)
     }
 }
