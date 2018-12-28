@@ -50,7 +50,7 @@ dependencies {
     compile "org.sql2o:sql2o:1.5.1"
 
     testCompile "junit:junit:4.12"
-    testCompile "com.willowtreeapps.assertk:assertk-jvm:0.12"
+    testCompile "org.assertj:assertj-core:3.11.1" 
     testCompile "io.mockk:mockk:1.7.15"
 }
 

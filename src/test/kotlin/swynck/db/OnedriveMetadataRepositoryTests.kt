@@ -1,13 +1,13 @@
 package swynck.db
 
-import assertk.assert
-import assertk.assertions.isEqualTo
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import swynck.dto.onedrive.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import java.util.*
 
+// TODO: refactor this to use TestData
 class OnedriveMetadataRepositoryTests {
     private val dependencies = TestDependencies()
     private val user = TestData.randomUser()
@@ -34,7 +34,7 @@ class OnedriveMetadataRepositoryTests {
         metadataRepository.insert(delta)
 
         val folder = metadataRepository.getRootFolder(user)
-        assert(folder).isEqualTo(Folder(id, "root"))
+        assertThat(folder).isEqualTo(Folder(id, "root"))
     }
 
     @Test
@@ -59,7 +59,7 @@ class OnedriveMetadataRepositoryTests {
 
         val rootFolder = metadataRepository.getRootFolder(user)
         val folder = metadataRepository.getFolders(user, rootFolder).single()
-        assert(folder).isEqualTo(Folder(childId, newChildFolder.name))
+        assertThat(folder).isEqualTo(Folder(childId, newChildFolder.name))
     }
 
     @Test
@@ -74,7 +74,7 @@ class OnedriveMetadataRepositoryTests {
 
         val rootFolderReturned = metadataRepository.getRootFolder(user)
         val childFoldersReturned = metadataRepository.getFolders(user, rootFolderReturned)
-        assert(childFoldersReturned.map { it.name }.sorted()).isEqualTo(childFolders.map { it.name }.sorted())
+        assertThat(childFoldersReturned.map { it.name }.sorted()).isEqualTo(childFolders.map { it.name }.sorted())
     }
 
     @Test
@@ -99,7 +99,7 @@ class OnedriveMetadataRepositoryTests {
             .singleOrNull()
             ?.let { getChildFoldersReturned(prev + it) }
             ?:prev
-        assert(getChildFoldersReturned().map { it.name }).isEqualTo(childFolders.map { it.name })
+        assertThat(getChildFoldersReturned().map { it.name }).isEqualTo(childFolders.map { it.name })
     }
 
     @Test
@@ -112,7 +112,7 @@ class OnedriveMetadataRepositoryTests {
 
         val rootFolderReturned = metadataRepository.getRootFolder(user)
         val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
-        assert(fileReturned).isEqualTo(File(file.id.split("!")[1].toInt(), file.name, file.file!!.mimeType))
+        assertThat(fileReturned).isEqualTo(File(file.id.split("!")[1].toInt(), file.name, file.file!!.mimeType))
     }
 
     @Test
@@ -129,7 +129,7 @@ class OnedriveMetadataRepositoryTests {
 
         val rootFolderReturned = metadataRepository.getRootFolder(user)
         val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
-        assert(fileReturned).isEqualTo(File(fileId, newFile.name, newFile.file!!.mimeType))
+        assertThat(fileReturned).isEqualTo(File(fileId, newFile.name, newFile.file!!.mimeType))
     }
 
     private fun getRootFolderDriveItem(id: Int) = DriveItem(

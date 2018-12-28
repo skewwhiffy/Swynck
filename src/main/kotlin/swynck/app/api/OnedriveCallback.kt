@@ -4,20 +4,18 @@ import org.http4k.core.Body
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.ACCEPTED
+import swynck.app.Dependencies
 import swynck.config.Json.auto
-import swynck.db.UserRepository
-import swynck.service.Onedrive
 
 object OnedriveCallback {
     operator fun invoke(
-        onedrive: Onedrive,
-        userRepository: UserRepository,
+        dependencies: Dependencies,
         request: Request
     ): Response {
         val requestDeserialized = OnedriveCallbackRequest(request)
-        val accessToken = onedrive.getAccessToken(requestDeserialized.authCode)
-        val userDetails = onedrive.getUser(accessToken)
-        userRepository.addUser(userDetails)
+        val accessToken = dependencies.oneDrive.getAccessToken(requestDeserialized.authCode)
+        val userDetails = dependencies.oneDrive.getUser(accessToken)
+        dependencies.userRepository.addUser(userDetails)
         return Response(ACCEPTED)
     }
 }

@@ -1,6 +1,6 @@
 package swynck.daemon.task
 
-import assertk.fail
+import org.assertj.core.api.Assertions.assertThat
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Test
 import org.sql2o.Sql2o
@@ -16,18 +16,14 @@ class FileDetailsSyncTests {
     init {
         val home = System.getProperty("user.home")
         val file = File("$home/.config/swynck/swynck.mv.db")
-        if (!file.exists()) {
-            fail("DB does not exist at ${file.absolutePath}")
-        }
+        assertThat(file).matches { it.exists() }
         val dataSource = JdbcDataSource().apply { setUrl("jdbc:h2:~/.config/swynck/swynck") }
         val sql2o = Sql2o(dataSource)
         user = sql2o.open().use {
             val users = it
                 .createQuery("SELECT * FROM users")
                 .executeAndFetch(User::class.java)
-            if (users.size != 1) {
-                fail("More than one refresh token")
-            }
+            assertThat(users).hasSize(1)
             users.single()
         }
         dependencies.userRepository.addUser(user)
@@ -53,7 +49,7 @@ class FileDetailsSyncTests {
             }
             items += delta.value.size
             dependencies.metadata.insert(delta)
-            if (items > 1000) {
+            if (items > 500) {
                 println("$items items: stopping")
                 break
             }

@@ -1,9 +1,7 @@
 package swynck.db
 
-import assertk.assert
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
@@ -18,7 +16,7 @@ class UserRepositoryTests {
     fun `get user with no user returns null`() {
         val user = userRepository.getUser()
 
-        assert(user).isNull()
+        assertThat(user).isNull()
     }
 
     @Test
@@ -28,7 +26,7 @@ class UserRepositoryTests {
 
         val returned = userRepository.getUser()
 
-        assert(returned).isEqualTo(user)
+        assertThat(returned).isEqualTo(user)
     }
 
     @Test
@@ -47,7 +45,7 @@ class UserRepositoryTests {
             }
         }
 
-        assert { userRepository.getUser() }.thrownError { isInstanceOf(NotImplementedError::class) }
+        assertThatThrownBy { userRepository.getUser() }.isInstanceOf(NotImplementedError::class.java)
     }
 
     @Test
@@ -56,7 +54,7 @@ class UserRepositoryTests {
 
         val nextLink = userRepository.getNextLink(user)
 
-        assert(nextLink).isNull()
+        assertThat(nextLink).isNull()
     }
 
     @Test
@@ -67,6 +65,6 @@ class UserRepositoryTests {
 
         val retrieved = userRepository.getNextLink(user)
 
-        assert(retrieved).isEqualTo(nextLink)
+        assertThat(retrieved).isEqualTo(nextLink)
     }
 }

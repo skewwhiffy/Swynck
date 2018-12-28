@@ -72,6 +72,23 @@ MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :user
         }
         .map { File(it.id, it.name, it.mimeType) }
 
+    fun search(user: User, vararg mimeTypes: String): List<File> = dataSourceFactory
+        .sql2o()
+        .use {
+            """
+SELECT * FROM files
+WHERE userID = :userId
+AND mimetype IN (:mimetypes)
+ORDER BY name
+LIMIT 200;
+            """.trimIndent()
+                .let(it::createQuery)
+                .addParameter("userId", user.id)
+                .addParameter("mimetypes", mimeTypes)
+                .executeAndFetch<FileDao>()
+        }
+        .map { File(it.id, it.name, it.mimeType) }
+
     private fun DriveItem.toFolderDao() = FolderDao(
         getId(),
         getUserId(),

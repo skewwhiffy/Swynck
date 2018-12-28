@@ -1,8 +1,6 @@
 package swynck.app
 
-import assertk.assert
-import assertk.assertions.contains
-import assertk.assertions.isEqualTo
+import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
@@ -27,9 +25,9 @@ class CurrentUserTests {
         config.port = 38080
         val response = api(Request(GET, "/user/me"))
 
-        assert(response.status).isEqualTo(OK)
+        assertThat(response.status).isEqualTo(OK)
         val notFoundResponse = UserNotFound.lens(response)
-        assert(notFoundResponse.redirect.toString()).contains("live.com")
+        assertThat(notFoundResponse.redirect.toString()).contains("live.com")
     }
 
     @Test
@@ -43,9 +41,9 @@ class CurrentUserTests {
 
         val response = api(Request(GET, "/user/me"))
 
-        assert(response.status).isEqualTo(OK)
+        assertThat(response.status).isEqualTo(OK)
         val user = UserFound.lens(response)
-        assert(user.displayName).isEqualTo("the_display_name")
+        assertThat(user.displayName).isEqualTo("the_display_name")
     }
 }
 
