@@ -10,7 +10,7 @@ class TestDependencies : Dependencies(
     TestConfig(),
     TestDaemonRunner()
 ) {
-    init { Migrations(dataSourceFactory).run() }
+    init { Migrations(this).run() }
 }
 
 class TestDaemonRunner : DaemonRunner {

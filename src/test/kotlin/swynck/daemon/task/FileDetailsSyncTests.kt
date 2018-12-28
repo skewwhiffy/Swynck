@@ -4,21 +4,13 @@ import assertk.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Test
 import org.sql2o.Sql2o
-import swynck.db.DataSourceFactory
-import swynck.db.Migrations
-import swynck.db.OnedriveMetadataRepository
-import swynck.db.UserRepository
 import swynck.model.User
-import swynck.service.Onedrive
-import swynck.test.utils.TestConfig
+import swynck.test.utils.TestDependencies
 import java.io.File
 import java.net.URI
 
 class FileDetailsSyncTests {
-    private val config = TestConfig()
-    private val dataSourceFactory = DataSourceFactory(config)
-    private val onedrive = Onedrive(config)
-    private val onedriveMetadata = OnedriveMetadataRepository(dataSourceFactory)
+    private val dependencies = TestDependencies()
     private val user: User
 
     init {
@@ -38,18 +30,17 @@ class FileDetailsSyncTests {
             }
             users.single()
         }
-        Migrations(dataSourceFactory).run()
-        UserRepository(dataSourceFactory).addUser(user)
+        dependencies.userRepository.addUser(user)
     }
 
     @Test
     fun `folders are populated`() {
-        val accessToken = onedrive.getAccessToken(user)
+        val accessToken = dependencies.oneDrive.getAccessToken(user)
 
         var nextLink: URI? = null
         var items = 0
         while (true) {
-            val delta = onedrive.getDelta(accessToken, nextLink)
+            val delta = dependencies.oneDrive.getDelta(accessToken, nextLink)
             if (nextLink == delta.nextLink) {
                 println("Next link has not changed")
                 break
@@ -61,7 +52,7 @@ class FileDetailsSyncTests {
                 break
             }
             items += delta.value.size
-            onedriveMetadata.insert(delta)
+            dependencies.metadata.insert(delta)
             if (items > 1000) {
                 println("$items items: stopping")
                 break

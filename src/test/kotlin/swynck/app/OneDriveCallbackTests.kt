@@ -21,7 +21,7 @@ class OneDriveCallbackTests {
     @Test
     fun `one drive callback populates refresh token`() {
         val dependencies = Dependencies(TestConfig())
-        Migrations(dependencies.dataSourceFactory).run()
+        Migrations(dependencies).run()
         val authCode = "${UUID.randomUUID()}"
         val accessToken = AccessToken(
             "${UUID.randomUUID()}",

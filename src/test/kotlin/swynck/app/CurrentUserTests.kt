@@ -19,7 +19,7 @@ class CurrentUserTests {
     private val api = Api(dependencies)
 
     init {
-        Migrations(dependencies.dataSourceFactory).run()
+        Migrations(dependencies).run()
     }
 
     @Test

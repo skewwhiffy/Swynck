@@ -12,6 +12,7 @@ import swynck.dto.onedrive.FileItem
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference
+import swynck.test.utils.hasPingEndpoint
 
 class ItemsRoutesTests {
     private val testData = TestData()
@@ -20,7 +21,7 @@ class ItemsRoutesTests {
 
     @Test
     fun `ping endpoint works`() {
-
+        assert(itemRoutes).hasPingEndpoint()
     }
 
     @Test

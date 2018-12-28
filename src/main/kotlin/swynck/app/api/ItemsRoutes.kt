@@ -16,8 +16,8 @@ import swynck.db.OnedriveMetadataRepository
 import swynck.db.UserRepository
 
 class ItemsRoutes(
-    val userRepository: UserRepository,
-    val metadataRepository: OnedriveMetadataRepository
+    private val userRepository: UserRepository,
+    private val metadataRepository: OnedriveMetadataRepository
 ) : RoutingHttpHandler by routes(
     "/ping" bind GET to { Response(OK).body("pong") },
     "/" bind GET to { GetItems(userRepository, metadataRepository, it) }

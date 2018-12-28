@@ -10,6 +10,7 @@ import swynck.dto.onedrive.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference
+import swynck.test.utils.hasPingEndpoint
 
 class ApiTests {
     private val testData = TestData()
@@ -18,18 +19,12 @@ class ApiTests {
 
     @Test
     fun `ping endpoint works`() {
-        val result = api(Request(Method.GET, "/ping"))
-
-        assert(result.status).isEqualTo(OK)
-        assert(result.bodyString()).isEqualTo("pong")
+        assert(api).hasPingEndpoint()
     }
 
     @Test
     fun `ItemsRoutes is wired in correctly`() {
-        val result = api(Request(Method.GET, "/items/ping"))
-
-        assert(result.status).isEqualTo(OK)
-        assert(result.bodyString()).isEqualTo("pong")
+        assert(api).hasPingEndpoint("/items/ping")
     }
 
     @Test

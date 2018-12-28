@@ -5,18 +5,14 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
 import org.junit.Test
-import swynck.test.utils.TestConfig
 import swynck.test.utils.TestData
+import swynck.test.utils.TestDependencies
 import java.net.URI
 import java.util.*
 
 class UserRepositoryTests {
-    private val dataSourceFactory = TestConfig().let(::DataSourceFactory)
-    private val userRepository = UserRepository(dataSourceFactory)
-
-    init {
-        Migrations(dataSourceFactory).run()
-    }
+    private val dependencies = TestDependencies()
+    private val userRepository = dependencies.userRepository
 
     @Test
     fun `get user with no user returns null`() {
@@ -39,7 +35,7 @@ class UserRepositoryTests {
     fun `get user with multiple users throws`() {
         val users = (0..1)
             .map { TestData.randomUser() }
-        dataSourceFactory.sql2o().use {
+        dependencies.dataSourceFactory.sql2o().use {
             users.forEach { user ->
                 """
                 INSERT INTO users (id, displayName, refreshToken, redirectUri)

@@ -10,7 +10,7 @@ fun main(args: Array<String>) = Run(Dependencies())
 object Run {
     operator fun invoke(dependencies: Dependencies) {
         println("Applying migrations")
-        Migrations(dependencies.dataSourceFactory).run()
+        Migrations(dependencies).run()
         println("Starting server on port ${dependencies.config.port()}")
         App(dependencies).asServer(Undertow(dependencies.config.port())).start()
         dependencies

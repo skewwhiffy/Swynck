@@ -6,21 +6,16 @@ import org.h2.jdbcx.JdbcDataSource
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.sql2o.Sql2o
-import swynck.config.Config
-import swynck.db.DataSourceFactory
-import swynck.db.Migrations
-import swynck.db.UserRepository
+import swynck.app.Dependencies
 import swynck.model.User
-import swynck.test.utils.TestConfig
+import swynck.test.utils.TestDependencies
 import swynck.test.utils.isNotBlank
 import java.io.File
 import java.net.URI
 
 class OnedriveAccessTokenTests {
     private val user: User
-    private val config: Config
-    private val onedrive: Onedrive
-    private val userRepository: UserRepository
+    private val dependencies: Dependencies
 
     init {
         val home = System.getProperty("user.home")
@@ -40,28 +35,24 @@ class OnedriveAccessTokenTests {
             users.single()
         }
 
-        config = TestConfig()
-        onedrive = Onedrive(config)
-        val dataSourceFactory = DataSourceFactory(config)
-        Migrations(dataSourceFactory).run()
-        userRepository = UserRepository(dataSourceFactory)
-        userRepository.addUser(user)
+        dependencies = TestDependencies()
+        dependencies.userRepository.addUser(user)
     }
 
     @Test
     fun `can get refresh token`() {
-        val accessToken = onedrive.getAccessToken(user)
+        val accessToken = dependencies.oneDrive.getAccessToken(user)
 
         assert(accessToken.access_token).isNotBlank()
     }
 
     @Test
     fun `can get deltas`() {
-        val accessToken = onedrive.getAccessToken(user)
+        val accessToken = dependencies.oneDrive.getAccessToken(user)
 
         fun getDeltas(soFar: Int, limit: Int, nextLink: URI?) {
             if (soFar >= limit) return
-            val delta = onedrive.getDelta(accessToken, nextLink)
+            val delta = dependencies.oneDrive.getDelta(accessToken, nextLink)
             delta.nextLink?:return
             getDeltas(soFar + delta.value.size, limit, delta.nextLink)
         }

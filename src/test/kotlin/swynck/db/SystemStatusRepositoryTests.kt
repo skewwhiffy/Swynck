@@ -6,14 +6,13 @@ import assertk.assertions.isFalse
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import org.junit.Test
-import swynck.test.utils.TestConfig
+import swynck.test.utils.TestDependencies
 import java.util.*
 
 class SystemStatusRepositoryTests : MapTestBase({
-    val config = TestConfig()
-    val dataSourceFactory = DataSourceFactory(config)
-    Migrations(dataSourceFactory).run()
-    SystemStatusRepository(dataSourceFactory)
+    val dependencies = TestDependencies()
+    Migrations(dependencies).run()
+    SystemStatusRepository(dependencies.dataSourceFactory)
 })
 
 class MapTests : MapTestBase({ mutableMapOf() })
