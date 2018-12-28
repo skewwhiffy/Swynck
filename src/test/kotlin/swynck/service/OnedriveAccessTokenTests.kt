@@ -1,7 +1,7 @@
 package swynck.service
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
+import assertk.assert
+import assertk.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -12,6 +12,7 @@ import swynck.db.Migrations
 import swynck.db.UserRepository
 import swynck.model.User
 import swynck.test.utils.TestConfig
+import swynck.test.utils.isNotBlank
 import java.io.File
 import java.net.URI
 
@@ -51,7 +52,7 @@ class OnedriveAccessTokenTests {
     fun `can get refresh token`() {
         val accessToken = onedrive.getAccessToken(user)
 
-        assertThat(accessToken.access_token).isNotBlank()
+        assert(accessToken.access_token).isNotBlank()
     }
 
     @Test

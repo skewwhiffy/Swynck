@@ -1,6 +1,7 @@
 package swynck.db
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isNotEmpty
 import org.junit.After
 import org.junit.Test
 import swynck.test.utils.StartServerForTesting
@@ -17,7 +18,7 @@ class MigrationsTests {
             val tables = connection.createQuery("show tables").executeAndFetch(Table::class.java)
 
             val candidates = tables.filter { it.table_name.toLowerCase() == "users" }
-            assertThat(candidates).isNotEmpty
+            assert(candidates).isNotEmpty()
         }
     }
 

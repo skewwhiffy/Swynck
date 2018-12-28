@@ -1,10 +1,11 @@
 package swynck.daemon
 
+import assertk.assert
+import assertk.assertions.isEqualTo
+import assertk.fail
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.experimental.delay
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 import swynck.daemon.task.DaemonTask
 import swynck.daemon.task.NoRestart
@@ -43,7 +44,7 @@ class DaemonRunnerTests {
             Thread.sleep(100)
         }
         val status = runner.statusOf(task) as Errored
-        assertThat(status.exceptions.single()).isEqualTo(task.exceptionsThrown.single())
+        assert(status.exceptions.single()).isEqualTo(task.exceptionsThrown.single())
     }
 
     @Test
@@ -63,7 +64,7 @@ class DaemonRunnerTests {
             Thread.sleep(100)
         }
         val status = runner.statusOf(task) as RunningWithErrors
-        assertThat(status.exceptions).isEqualTo(task.exceptionsThrown)
+        assert(status.exceptions).isEqualTo(task.exceptionsThrown)
     }
 
     private fun TestDaemonTask.waitForRuns(totalRuns: Int) {

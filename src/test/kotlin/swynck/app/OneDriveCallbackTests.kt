@@ -1,9 +1,10 @@
 package swynck.app
 
+import assertk.assert
+import assertk.assertions.isEqualTo
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
@@ -44,8 +45,8 @@ class OneDriveCallbackTests {
 
         verify { oneDrive.getAccessToken(authCode) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
-        assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
-        assertThat(user.displayName).isEqualTo(displayName)
-        assertThat(response.status).isEqualTo(ACCEPTED)
+        assert(user.refreshToken).isEqualTo(accessToken.refresh_token)
+        assert(user.displayName).isEqualTo(displayName)
+        assert(response.status).isEqualTo(ACCEPTED)
     }
 }

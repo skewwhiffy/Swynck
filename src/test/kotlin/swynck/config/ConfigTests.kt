@@ -1,6 +1,8 @@
 package swynck.config
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 import org.junit.Test
 
 class ConfigTests {
@@ -11,7 +13,7 @@ class ConfigTests {
             override fun db() = TODO()
         }
 
-        assertThat(config.canAuthenticateOnedrive()).isTrue()
+        assert(config.canAuthenticateOnedrive()).isTrue()
     }
 
     @Test
@@ -21,6 +23,6 @@ class ConfigTests {
             override fun db() = TODO()
         }
 
-        assertThat(config.canAuthenticateOnedrive()).isFalse()
+        assert(config.canAuthenticateOnedrive()).isFalse()
     }
 }

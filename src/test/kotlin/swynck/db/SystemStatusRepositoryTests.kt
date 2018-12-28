@@ -1,6 +1,10 @@
 package swynck.db
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import org.junit.Test
 import swynck.test.utils.TestConfig
 import java.util.*
@@ -14,7 +18,7 @@ class SystemStatusRepositoryTests : MapTestBase({
 
 class MapTests : MapTestBase({ mutableMapOf() })
 
-abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>) {
+abstract class MapTestBase(makeMap: () -> MutableMap<String, String>) {
     private val map = makeMap()
 
     @Test
@@ -23,11 +27,11 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
         val originalKey = getNewString()
         val returnValue = map.put(originalKey, originalValue)
 
-        assertThat(returnValue).isNull()
+        assert(returnValue).isNull()
 
         val nextReturnValue = map.put(originalKey, getNewString())
 
-        assertThat(nextReturnValue).isEqualTo(originalValue)
+        assert(nextReturnValue).isEqualTo(originalValue)
     }
 
     @Test
@@ -37,7 +41,7 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
 
         val newSize = map.size
 
-        assertThat(newSize).isEqualTo(originalSize + 1)
+        assert(newSize).isEqualTo(originalSize + 1)
     }
 
     @Test
@@ -49,8 +53,8 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
         val firstReturnValue = map.remove(key)
         val secondReturnValue = map.remove(key)
 
-        assertThat(firstReturnValue).isEqualTo(value)
-        assertThat(secondReturnValue).isNull()
+        assert(firstReturnValue).isEqualTo(value)
+        assert(secondReturnValue).isNull()
     }
 
     @Test
@@ -61,48 +65,48 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
 
         map.remove(keys[0])
 
-        assertThat(map.size).isEqualTo(originalSize - 1)
+        assert(map.size).isEqualTo(originalSize - 1)
     }
 
     @Test
     fun `containsKey is true only if key value is defined`() {
         val key = getNewString()
-        assertThat(map.containsKey(key)).isFalse()
+        assert(map.containsKey(key)).isFalse()
 
         map[key] = getNewString()
 
-        assertThat(map.containsKey(key)).isTrue()
+        assert(map.containsKey(key)).isTrue()
     }
 
     @Test
     fun `containsValue is true only if value is defined`() {
         val value = getNewString()
-        assertThat(map.containsValue(value)).isFalse()
+        assert(map.containsValue(value)).isFalse()
 
         map[getNewString()] = value
 
-        assertThat(map.containsValue(value)).isTrue()
+        assert(map.containsValue(value)).isTrue()
     }
 
     @Test
     fun `get element returns value if set`() {
         val key = getNewString()
         val value = getNewString()
-        assertThat(map[key]).isNull()
+        assert(map[key]).isNull()
 
         map[key] = value
 
-        assertThat(map[key]).isEqualTo(value)
+        assert(map[key]).isEqualTo(value)
     }
 
     @Test
     fun `isEmpty() works as expected`() {
         map.clear()
-        assertThat(map.isEmpty()).isTrue()
+        assert(map.isEmpty()).isTrue()
 
         map[getNewString()] = getNewString()
 
-        assertThat(map.isEmpty()).isFalse()
+        assert(map.isEmpty()).isFalse()
     }
 
     @Test
@@ -119,7 +123,7 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
 
         val entries = map.entries
 
-        assertThat(entries.map { it.key to it.value }.toSet()).isEqualTo(expected)
+        assert(entries.map { it.key to it.value }.toSet()).isEqualTo(expected)
     }
 
     @Test
@@ -136,7 +140,7 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
 
         val keys = map.keys
 
-        assertThat(keys.toSet()).isEqualTo(expected)
+        assert(keys.toSet()).isEqualTo(expected)
     }
 
     @Test
@@ -151,7 +155,7 @@ abstract class MapTestBase(private val makeMap: () -> MutableMap<String, String>
 
         val values = map.values
 
-        assertThat(values.toSet()).isEqualTo(expected.toSet())
+        assert(values.toSet()).isEqualTo(expected.toSet())
     }
 
     private fun getNewString() = "${UUID.randomUUID()}"

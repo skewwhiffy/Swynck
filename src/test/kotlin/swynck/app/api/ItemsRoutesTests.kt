@@ -1,6 +1,7 @@
 package swynck.app.api
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isEqualTo
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
@@ -46,10 +47,9 @@ class ItemsRoutesTests {
 
         val result = itemRoutes(Request(Method.GET, "/"))
 
-        assertThat(result.status).isEqualTo(OK)
+        assert(result.status).isEqualTo(OK)
         println(result.bodyString())
         val deserializedResponse = GetItemsResponse.lens(result)
-        assertThat(deserializedResponse.files.map { it.name })
-            .isEqualTo(filenames)
+        assert(deserializedResponse.files.map { it.name }).isEqualTo(filenames)
     }
 }

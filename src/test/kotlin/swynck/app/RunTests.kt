@@ -1,6 +1,7 @@
 package swynck.app
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isEqualTo
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.junit.After
@@ -17,6 +18,6 @@ class RunTests {
     fun `ping endpoint works`() {
         val response = server.client(Request(GET, "http://localhost:${server.dependencies.config.port()}/ping"))
 
-        assertThat(response.bodyString()).isEqualTo("pong")
+        assert(response.bodyString()).isEqualTo("pong")
     }
 }

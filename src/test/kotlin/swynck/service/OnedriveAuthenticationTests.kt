@@ -1,6 +1,7 @@
 package swynck.service
 
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import assertk.assert
+import assertk.assertions.isInstanceOf
 import org.junit.Test
 import swynck.test.utils.TestConfig
 import java.net.PortUnreachableException
@@ -13,7 +14,7 @@ class OnedriveAuthenticationTests {
     fun `when using unsupported callback port then authentication URL blows up`() {
         config.port = 0
 
-        assertThatThrownBy { onedrive.authenticationUrl() }.isInstanceOf(PortUnreachableException::class.java)
+        assert { onedrive.authenticationUrl() }.thrownError { isInstanceOf(PortUnreachableException::class) }
     }
 
     @Test

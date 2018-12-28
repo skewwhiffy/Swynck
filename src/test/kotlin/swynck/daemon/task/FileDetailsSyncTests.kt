@@ -1,6 +1,6 @@
 package swynck.daemon.task
 
-import org.assertj.core.api.Assertions.fail
+import assertk.fail
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Test
 import org.sql2o.Sql2o

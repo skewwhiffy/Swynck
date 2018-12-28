@@ -1,10 +1,12 @@
 package swynck.app
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.junit.Test
 import swynck.test.utils.TestDependencies
+import swynck.test.utils.satisfies
 
 class AppTests {
     private val dependencies = TestDependencies()
@@ -14,8 +16,8 @@ class AppTests {
     fun `app ping endpoint responds`() {
         val response = app(Request(GET, "/ping"))
 
-        assertThat(response.status.successful).isTrue()
-        assertThat(response.bodyString()).isEqualTo("pong")
+        assert(response).satisfies { it.status.successful }
+        assert(response.bodyString()).isEqualTo("pong")
     }
 
     @Test
@@ -25,7 +27,7 @@ class AppTests {
 
         val response = app(Request(GET, "/api/ping"))
 
-        assertThat(response.status.successful).isTrue()
-        assertThat(response.bodyString()).isEqualTo("pong")
+        assert(response).satisfies { it.status.successful }
+        assert(response.bodyString()).isEqualTo("pong")
     }
 }

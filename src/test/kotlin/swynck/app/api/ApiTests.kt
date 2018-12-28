@@ -1,6 +1,7 @@
 package swynck.app.api
 
-import org.assertj.core.api.Assertions.assertThat
+import assertk.assert
+import assertk.assertions.isEqualTo
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
@@ -19,16 +20,16 @@ class ApiTests {
     fun `ping endpoint works`() {
         val result = api(Request(Method.GET, "/ping"))
 
-        assertThat(result.status).isEqualTo(OK)
-        assertThat(result.bodyString()).isEqualTo("pong")
+        assert(result.status).isEqualTo(OK)
+        assert(result.bodyString()).isEqualTo("pong")
     }
 
     @Test
     fun `ItemsRoutes is wired in correctly`() {
         val result = api(Request(Method.GET, "/items/ping"))
 
-        assertThat(result.status).isEqualTo(OK)
-        assertThat(result.bodyString()).isEqualTo("pong")
+        assert(result.status).isEqualTo(OK)
+        assert(result.bodyString()).isEqualTo("pong")
     }
 
     @Test
@@ -55,10 +56,9 @@ class ApiTests {
 
         val result = api(Request(Method.GET, "/items"))
 
-        assertThat(result.status).isEqualTo(OK)
-        println(result.bodyString())
+        assert(result.status).isEqualTo(OK)
         val deserializedResponse = GetItemsResponse.lens(result)
-        assertThat(deserializedResponse.files.map { it.name })
+        assert(deserializedResponse.files.map { it.name })
             .isEqualTo(filenames)
     }
 }
