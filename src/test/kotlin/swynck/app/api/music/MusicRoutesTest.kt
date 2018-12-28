@@ -46,8 +46,7 @@ class MusicRoutesTest {
 
     @Test
     fun `GetMusic picks up first page of mp3 files alphabetically by filename`() {
-        val files = (0..250)
-            .map { getNewFile() }
+        val files = (0..250).map { getNewFile() }
         val delta = DeltaResponse(
             null,
             null,
@@ -62,6 +61,25 @@ class MusicRoutesTest {
         val deserialized = GetMusicResponse.lens(result)
         val filenamesReturned = deserialized.files.map { it.name }
         assertThat(filenamesReturned).isEqualTo(files.map { it.name }.sorted().subList(0, pageCount))
+    }
+
+    @Test
+    fun `GetMusic picks up second page of mp3 files alphabetically by filename`() {
+        val files = (0..250).map { getNewFile() }
+        val delta = DeltaResponse(
+            null,
+            null,
+            listOf(root, *files.toTypedArray())
+        )
+        dependencies.userRepository.addUser(user)
+        dependencies.metadata.insert(delta)
+
+        val result = musicRoutes(Request(GET, "/").query("page", "2"))
+
+        assertThat(result).matches { it.status == OK }
+        val deserialized = GetMusicResponse.lens(result)
+        val filenamesReturned = deserialized.files.map { it.name }
+        assertThat(filenamesReturned).isEqualTo(files.map { it.name }.sorted().subList(pageCount, files.size))
     }
 
     private fun getNewFile() = DriveItem(

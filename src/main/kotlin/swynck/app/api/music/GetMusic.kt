@@ -9,6 +9,7 @@ import swynck.app.Dependencies
 import swynck.app.api.dto.FileDto
 import swynck.app.api.dto.toDto
 import swynck.config.Json.auto
+import swynck.db.OnedriveMetadataRepository
 
 object GetMusic {
     private val musicMimeTypes = listOf(
@@ -20,12 +21,15 @@ object GetMusic {
         request: Request
     ): Response {
         val currentUser = dependencies.userRepository.getUser() ?: return Response(FORBIDDEN)
-        val files = dependencies
-            .metadata
-            .search(currentUser, *musicMimeTypes.toTypedArray())
+        return OnedriveMetadataRepository
+            .SearchRequest
+            .withUser(currentUser)
+            .withPage(request.query("page")?.toIntOrNull()?:0)
+            .withMimeTypes(*musicMimeTypes.toTypedArray())
+            .let(dependencies.metadata::search)
             .map { it.toDto() }
-        return Response(OK)
-            .withBody(GetMusicResponse(files))
+            .let(::GetMusicResponse)
+            .let(Response(OK)::withBody)
     }
 }
 
