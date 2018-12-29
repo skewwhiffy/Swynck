@@ -22,10 +22,6 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://maven.nuxeo.org/nexus/content/groups/public"
-    }
-    jcenter()
 }
 
 dependencies {
@@ -38,9 +34,9 @@ dependencies {
     compile rootProject.ext.dep_http4k_contract
     compile rootProject.ext.dep_http4k_format_jackson
     compile rootProject.ext.dep_http4k_server_undertow
+    compile rootProject.ext.dep_kotlin_reflect
     compile rootProject.ext.dep_kotlin_stdlib
     compile rootProject.ext.dep_kotlinx_coroutines
-    compile rootProject.ext.dep_onedrive
     compile rootProject.ext.dep_sql2o
 
     testCompile rootProject.ext.dep_junit
