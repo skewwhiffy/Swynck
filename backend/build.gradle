@@ -28,10 +28,9 @@ dependencies {
     compile rootProject.ext.dep_envy
     compile rootProject.ext.dep_flyway
     compile rootProject.ext.dep_h2
-    compile rootProject.ext.dep_http4k_contract
-    compile rootProject.ext.dep_http4k_core
     compile rootProject.ext.dep_http4k_client
     compile rootProject.ext.dep_http4k_contract
+    compile rootProject.ext.dep_http4k_core
     compile rootProject.ext.dep_http4k_format_jackson
     compile rootProject.ext.dep_http4k_server_undertow
     compile rootProject.ext.dep_kotlin_reflect

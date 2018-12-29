@@ -2,8 +2,7 @@ package swynck.service
 
 import org.http4k.client.OkHttp
 import org.http4k.core.Body
-import org.http4k.core.Method.GET
-import org.http4k.core.Method.POST
+import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
 import swynck.config.Config
@@ -16,6 +15,7 @@ import java.net.URI
 import java.net.URLEncoder
 
 class Onedrive(private val config: Config) {
+    @Suppress("SpellCheckingInspection")
     companion object {
         private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
         private const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
@@ -50,7 +50,7 @@ class Onedrive(private val config: Config) {
             .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
             .map { "${it.key}=${it.value}" }
             .joinToString("&")
-            .let { Request(POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .let { Request(Method.POST, "https://login.live.com/oauth20_token.srf").body(it) }
             .header("Content-Type", "application/x-www-form-urlencoded")
         val client = OkHttp()
         val response = client(request)
@@ -69,7 +69,7 @@ class Onedrive(private val config: Config) {
             .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
             .map { "${it.key}=${it.value}" }
             .joinToString("&")
-            .let { Request(POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .let { Request(Method.POST, "https://login.live.com/oauth20_token.srf").body(it) }
             .header("Content-Type", "application/x-www-form-urlencoded")
         val client = OkHttp()
         val response = client(request)
@@ -79,7 +79,7 @@ class Onedrive(private val config: Config) {
 
     fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
-        return Request(GET, "https://graph.microsoft.com/v1.0/me/drive")
+        return Request(Method.GET, "https://graph.microsoft.com/v1.0/me/drive")
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { client(it) }
             .let { DriveResource(it) }
@@ -93,7 +93,7 @@ class Onedrive(private val config: Config) {
             accessToken,
             URI("https://graph.microsoft.com/v1.0/me/drive/root/delta")
         )
-        return Request(GET, nextLink.toString())
+        return Request(Method.GET, nextLink.toString())
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { client(it) }
             .let { DeltaResponse(it) }

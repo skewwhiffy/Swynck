@@ -17,16 +17,6 @@ import org.http4k.format.ConfigurableJackson
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
-inline fun <reified T> KotlinModule.custom(crossinline write: (T) -> String, crossinline read: (String) -> T) =
-    apply {
-        addDeserializer(T::class.java, object : JsonDeserializer<T>() {
-            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): T = read(p.text)
-        })
-        addSerializer(T::class.java, object : JsonSerializer<T>() {
-            override fun serialize(value: T?, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(write(value!!))
-        })
-    }
-
 object Json : ConfigurableJackson(ObjectMapper()
     .registerModule(KotlinModule()
         .custom(ISO_OFFSET_DATE_TIME::format) { ZonedDateTime.parse(it, ISO_OFFSET_DATE_TIME) }
@@ -38,3 +28,14 @@ object Json : ConfigurableJackson(ObjectMapper()
     .configure(USE_BIG_DECIMAL_FOR_FLOATS, true)
     .configure(USE_BIG_INTEGER_FOR_INTS, true)
 )
+
+inline fun <reified T> KotlinModule.custom(crossinline write: (T) -> String, crossinline read: (String) -> T) =
+    apply {
+        addDeserializer(T::class.java, object : JsonDeserializer<T>() {
+            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): T = read(p.text)
+        })
+        addSerializer(T::class.java, object : JsonSerializer<T>() {
+            override fun serialize(value: T?, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(write(value!!))
+        })
+    }
+
