@@ -12,7 +12,6 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
@@ -29,4 +28,7 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-
+task populateTestData(type: JavaExec) {
+    main = 'swynck.fake.onedrive.PopulateTestDataKt'
+    classpath = sourceSets.main.runtimeClasspath
+}
