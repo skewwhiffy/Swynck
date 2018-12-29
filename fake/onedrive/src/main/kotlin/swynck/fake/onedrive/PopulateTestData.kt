@@ -137,6 +137,7 @@ class DeltaData(private val userData: UserData, private val testDataFolder: File
             if (accessTokenLastRefresh < Instant.now().minus(Duration.ofMinutes(5))) {
                 println("Getting new access token")
                 getAccessToken(user)
+                accessTokenLastRefresh = Instant.now()
             }
             val deltaString = nextLinkUrlMap.get(nextLink) ?: getDelta(accessToken, nextLink)
             val file = File(deltaFolder, "${UUID.randomUUID()}.json")
