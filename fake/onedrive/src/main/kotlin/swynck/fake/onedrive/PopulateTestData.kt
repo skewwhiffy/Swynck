@@ -1,6 +1,7 @@
 package swynck.fake.onedrive
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES
 import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS
@@ -21,6 +22,7 @@ import java.net.URI
 import java.net.URLEncoder
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
+import java.util.*
 
 fun main(args: Array<String>) = PopulateTestData()
 
@@ -28,34 +30,29 @@ object PopulateTestData {
     operator fun invoke() {
         val testDataFolder = File("testData").also { it.mkdirs() }
         if (!testDataFolder.exists()) throw Exception("Test data root folder does not exist")
-        UserData(testDataFolder).populate()
-        PopulateDeltaData(testDataFolder)
+        val userData = UserData(testDataFolder)
+        userData.getUser()
+        val deltaData = DeltaData(userData, testDataFolder)
+        deltaData.populate()
     }
 }
 
 class UserData(testDataFolder: File) {
-    private val userData = File(testDataFolder, "onedrive/user").also { it.mkdirs() }
+    private val userData = File(testDataFolder, "onedrive/user")
     private val userFile = File(userData, "user.json")
 
-    fun populate() {
-        println("Ensuring user logged in")
-        if (!userData.exists()) throw Exception("User data folder does not exist")
-        if (authCodeSet()) {
-            println("User logged in")
-            return
-        }
-        println("User not logged in")
-        println("Getting auth code")
-        val authCode = getAuthCode()
-        println("Getting access token")
-        val accessToken = getAccessToken(authCode)
-        println("Getting user details")
-        val user = getUser(accessToken)
-        println("Persisting user details")
-        userFile.writeText(Json.asJsonString(user))
-    }
+    fun getUser(): User {
+        userData.mkdirs()
 
-    private fun authCodeSet() = userFile.isFile
+        if (!userData.exists()) throw Exception("User data folder does not exist")
+        if (userFile.isFile) return userFile.readText().let { Json.asA(it, User::class) }
+
+        val authCode = getAuthCode()
+        val accessToken = getAccessToken(authCode)
+        val user = getUser(accessToken)
+        userFile.writeText(Json.asJsonString(user))
+        return user
+    }
 
     private fun getUser(accessToken: AccessToken): User {
         val client = OkHttp()
@@ -115,10 +112,71 @@ class UserData(testDataFolder: File) {
     }
 }
 
-object PopulateDeltaData {
-    operator fun invoke(testDataFolder: File) {
+class DeltaData(private val userData: UserData, private val testDataFolder: File) {
+    fun populate() {
         val deltaFolder = File(testDataFolder, "onedrive/deltas").also { it.mkdir() }
         if (!deltaFolder.isDirectory) throw Exception("Deltas folder does not exist")
+        if (deltaFolder.listFiles().any()) {
+            println("Deltas already populated, skipping")
+            return
+        }
+
+        val user = userData.getUser()
+        val accessToken = getAccessToken(user)
+
+        var nextLink: URI? = null
+        var files = 0
+        var folders = 0
+        while (true) {
+            val deltaString = getDelta(accessToken, nextLink)
+            val delta = Json.asA(deltaString, DeltaResponse::class)
+            if (nextLink == delta.nextLink) {
+                println("Next link has not changed")
+                break
+            }
+            nextLink = delta.nextLink
+            if (nextLink == null) {
+                println("Next link is null")
+                println("Delta link is ${delta.deltaLink}")
+                break
+            }
+            files += delta.value.count { it.file != null }
+            folders += delta.value.count { it.folder != null }
+            println("$files files and $folders folders so far")
+            val file = File(deltaFolder, "${UUID.randomUUID()}.json")
+            file.writeText(deltaString)
+        }
+    }
+
+    // TODO: Commonize with Onedrive.kt
+    private fun getDelta(accessToken: AccessToken, nextLink: URI? = null): String {
+        val client = OkHttp()
+        nextLink ?: return getDelta(
+            accessToken,
+            URI("https://graph.microsoft.com/v1.0/me/drive/root/delta")
+        )
+        return Request(Method.GET, nextLink.toString())
+            .header("Authorization", "bearer ${accessToken.access_token}")
+            .let { client(it) }
+            .bodyString()
+    }
+
+    private fun getAccessToken(user: User): AccessToken {
+        val request = mapOf(
+            "client_id" to OnedriveDetails.clientId,
+            "redirect_uri" to user.redirectUri,
+            "grant_type" to "refresh_token",
+            "refresh_token" to user.refreshToken
+        )
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(Method.POST, "https://login.live.com/oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
+        val client = OkHttp()
+        val response = client(request)
+        return if (response.status.successful) AccessToken(response)
+        else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 }
 
@@ -193,3 +251,42 @@ inline fun <reified T> KotlinModule.custom(crossinline write: (T) -> String, cro
         })
     }
 
+// TODO: Commonize with Resources.kt
+data class DeltaResponse(
+    @JsonProperty("@odata.nextLink")
+    val nextLink: URI?,
+    @JsonProperty("@odata.deltaLink")
+    val deltaLink: URI?,
+    val value: List<DriveItem>
+) {
+    companion object {
+        private val lens = Body.auto<DeltaResponse>().toLens()
+        operator fun invoke(response: Response) = lens(response)
+    }
+}
+
+data class DriveItem(
+    val id: String,
+    val name: String,
+    val file: FileItem?,
+    val folder: FolderItem?,
+    val `package`: PackageItem?,
+    val parentReference: ParentReference
+)
+
+data class FileItem(
+    val mimeType: String
+)
+
+data class FolderItem(
+    val childCount: Int
+)
+
+data class PackageItem(
+    val type: String
+)
+
+data class ParentReference(
+    val driveId: String,
+    val id: String
+)
