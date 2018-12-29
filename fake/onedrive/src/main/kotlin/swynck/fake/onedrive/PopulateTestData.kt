@@ -20,6 +20,8 @@ import swynck.fake.onedrive.Json.auto
 import java.io.File
 import java.net.URI
 import java.net.URLEncoder
+import java.time.Duration
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 import java.util.*
@@ -116,35 +118,46 @@ class DeltaData(private val userData: UserData, private val testDataFolder: File
     fun populate() {
         val deltaFolder = File(testDataFolder, "onedrive/deltas").also { it.mkdir() }
         if (!deltaFolder.isDirectory) throw Exception("Deltas folder does not exist")
-        if (deltaFolder.listFiles().any()) {
-            println("Deltas already populated, skipping")
-            return
-        }
-
-        val user = userData.getUser()
-        val accessToken = getAccessToken(user)
-
         var nextLink: URI? = null
         var files = 0
         var folders = 0
+        val nextLinkUrlMap = deltaFolder
+            .listFiles()
+            .map { it.readText() }
+            .map { Json.asA(it, DeltaRequestAndResponse::class) }
+            .map { it.requestUrl to it.response }
+            .toMap()
+
+        val user = userData.getUser()
+        val accessToken = getAccessToken(user)
+        var accessTokenLastRefresh = Instant.now()
+
         while (true) {
-            val deltaString = getDelta(accessToken, nextLink)
+            if (accessTokenLastRefresh < Instant.now().minus(Duration.ofMinutes(5))) {
+                println("Getting new access token")
+                getAccessToken(user)
+            }
+            val deltaString = nextLinkUrlMap.get(nextLink) ?: getDelta(accessToken, nextLink)
+            val file = File(deltaFolder, "${UUID.randomUUID()}.json")
+            val payload = DeltaRequestAndResponse(
+                nextLink,
+                deltaString
+            )
             val delta = Json.asA(deltaString, DeltaResponse::class)
+            files += delta.value.count { it.file != null }
+            folders += delta.value.count { it.folder != null }
+            println("$files files and $folders folders so far")
             if (nextLink == delta.nextLink) {
                 println("Next link has not changed")
                 break
             }
-            nextLink = delta.nextLink
-            if (nextLink == null) {
+            if (delta.nextLink == null) {
                 println("Next link is null")
                 println("Delta link is ${delta.deltaLink}")
                 break
             }
-            files += delta.value.count { it.file != null }
-            folders += delta.value.count { it.folder != null }
-            println("$files files and $folders folders so far")
-            val file = File(deltaFolder, "${UUID.randomUUID()}.json")
-            file.writeText(deltaString)
+            if (!nextLinkUrlMap.contains(nextLink)) file.writeText(Json.asJsonString(payload))
+            nextLink = delta.nextLink
         }
     }
 
@@ -250,6 +263,11 @@ inline fun <reified T> KotlinModule.custom(crossinline write: (T) -> String, cro
             override fun serialize(value: T?, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(write(value!!))
         })
     }
+
+data class DeltaRequestAndResponse(
+    val requestUrl: URI?,
+    val response: String
+)
 
 // TODO: Commonize with Resources.kt
 data class DeltaResponse(
