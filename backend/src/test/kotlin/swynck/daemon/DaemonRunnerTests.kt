@@ -2,7 +2,7 @@ package swynck.daemon
 
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.delay
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import swynck.daemon.task.DaemonTask

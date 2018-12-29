@@ -1,14 +1,15 @@
 package swynck.daemon
 
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import swynck.daemon.task.DaemonTask
 import swynck.daemon.task.NoRestart
 import swynck.daemon.task.Restart
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
+import kotlin.coroutines.EmptyCoroutineContext
 
 interface DaemonRunner {
     companion object {
@@ -20,6 +21,7 @@ interface DaemonRunner {
 }
 
 class DaemonRunnerImpl : DaemonRunner {
+    private val scope = CoroutineScope(EmptyCoroutineContext)
     private val taskKeys = ConcurrentHashMap<UUID, DaemonTask>()
     private val taskRuns = ConcurrentHashMap<UUID, Deferred<*>>()
     private val taskStatus = ConcurrentHashMap<UUID, DaemonTaskStatus>()
@@ -27,7 +29,7 @@ class DaemonRunnerImpl : DaemonRunner {
     override fun add(task: DaemonTask) {
         val key = UUID.randomUUID()
         taskKeys[key] = task
-        val run = async { runContinuously(task) }
+        val run = scope.async { runContinuously(task) }
         taskRuns[key] = run
         taskStatus[key] = Running(listOf())
     }
@@ -63,7 +65,7 @@ class DaemonRunnerImpl : DaemonRunner {
                             is RunningWithErrors -> RunningWithErrors(currentStatus.exceptions + e)
                             else -> throw InvalidStateException
                         }
-                        delay(policy.pause.toMillis(), TimeUnit.MILLISECONDS)
+                        delay(policy.pause.toMillis())
                     }
                     else -> throw InvalidStateException
                 }

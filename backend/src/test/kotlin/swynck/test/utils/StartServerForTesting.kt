@@ -1,17 +1,21 @@
 package swynck.test.utils
 
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.cancelAndJoin
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import swynck.app.Run
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 class StartServerForTesting : AutoCloseable {
+    private val scope = CoroutineScope(EmptyCoroutineContext)
     val dependencies = TestDependencies()
 
-    private val server = async {
+    private val server = scope.async {
         try {
             Run(dependencies)
         } catch (e: Exception) {

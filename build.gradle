@@ -1,81 +1,38 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
 }
 
-jar {
-    manifest {
-        attributes(
-                "Main-Class": "swynck.app.RunKt"
-        )
-    }
-}
+ext {
+    ver_http4k = '3.103.2'
+    ver_kotlin = '1.3.11'
+    dep_envy = 'com.statemachinesystems:envy:1.9'
+    dep_flyway = 'org.flywaydb:flyway-core:5.2.4'
+    dep_h2 = 'com.h2database:h2:1.4.197'
+    dep_http4k_contract =  "org.http4k:http4k-contract:${rootProject.ext.ver_http4k}"
+    dep_http4k_core = "org.http4k:http4k-core:${rootProject.ext.ver_http4k}"
+    dep_http4k_client = "org.http4k:http4k-client-okhttp:${rootProject.ext.ver_http4k}"
+    dep_http4k_format_jackson = "org.http4k:http4k-format-jackson:${rootProject.ext.ver_http4k}"
+    dep_http4k_server_undertow = "org.http4k:http4k-server-undertow:${rootProject.ext.ver_http4k}"
+    dep_kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.ver_kotlin}"
+    dep_kotlin_reflect = "org.jetbrains.kotlin:kotlin-reflect:${rootProject.ext.ver_kotlin}"
+    dep_kotlinx_coroutines = 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0'
+    dep_sql2o = 'org.sql2o:sql2o:1.6.0'
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'java'
-apply plugin: 'application'
-mainClassName = 'swynck.app.RunKt'
-
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
-}
-
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-    maven {
-        url "http://maven.nuxeo.org/nexus/content/groups/public"
-    }
-    jcenter()
-}
-
-dependencies {
-    compile "com.statemachinesystems:envy:1.9"
-    compile "org.flywaydb:flyway-core:5.1.4"
-    compile "com.h2database:h2:1.4.197"
-    compile "org.http4k:http4k-contract:3.32.1"
-    compile "org.http4k:http4k-core:3.32.1"
-    compile "org.http4k:http4k-client-okhttp:3.32.1"
-    compile "org.http4k:http4k-contract:3.32.1"
-    compile "org.http4k:http4k-format-jackson:3.32.1"
-    compile "org.http4k:http4k-server-undertow:3.32.1"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
-    compile "org.nuxeo.onedrive:onedrive-java-client:1.0"
-    compile "org.sql2o:sql2o:1.5.1"
-
-    testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.11.1" 
-    testCompile "io.mockk:mockk:1.7.15"
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-task pack(type: Jar) {
-    manifest {
-        attributes "Implementation-Title": "Swynck",
-                "Implementation-Version": version,
-                "Main-Class": "swynck.app.RunKt"
-    }
-    baseName = project.name + '-packed'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+    dep_junit = 'junit:junit:4.12'
+    dep_assertj = 'org.assertj:assertj-core:3.11.1'
+    dep_mockk = 'io.mockk:mockk:1.8.13'
 }
 
 task buildFrontend(type: Exec) {
-    print 'Building frontend...'
     workingDir 'frontend'
     commandLine 'sh', 'build.sh'
 }
 
-build.dependsOn buildFrontend
+repositories {
+    mavenCentral()
+}
+
+build.dependsOn(buildFrontend)
+build.dependsOn('backend:build')
+build.dependsOn('fake:onedrive:build')

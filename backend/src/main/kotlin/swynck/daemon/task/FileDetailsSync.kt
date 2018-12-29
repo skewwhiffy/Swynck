@@ -1,10 +1,9 @@
 package swynck.daemon.task
 
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.delay
 import swynck.app.Dependencies
 import swynck.model.User
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 
 class FileDetailsSync(
     val user: User,
@@ -13,7 +12,7 @@ class FileDetailsSync(
     companion object {
         private val updatingDelay = Duration.ofSeconds(1)!!
         private val pollingInterval = Duration.ofSeconds(15)!!
-        private suspend fun delay(duration: Duration) = delay(duration.toNanos(), TimeUnit.NANOSECONDS)
+        private suspend fun delay(duration: Duration) = delay(duration.toMillis())
     }
 
     override suspend fun runSingle() {
