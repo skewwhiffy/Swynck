@@ -15,6 +15,7 @@ import org.http4k.core.Body
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.OK
 import org.http4k.format.ConfigurableJackson
 import swynck.fake.onedrive.Json.auto
 import java.io.File
@@ -168,10 +169,16 @@ class DeltaData(private val userData: UserData, private val testDataFolder: File
             accessToken,
             URI("https://graph.microsoft.com/v1.0/me/drive/root/delta")
         )
-        return Request(Method.GET, nextLink.toString())
+        val request = Request(Method.GET, nextLink.toString())
             .header("Authorization", "bearer ${accessToken.access_token}")
-            .let { client(it) }
-            .bodyString()
+        var attempts = 5
+        while (true) {
+            val response = client(request)
+            if (response.status == OK) return response.bodyString()
+            if (attempts-- < 0) throw Exception("I've tried lots, but failed. I give up")
+            println("Call failed: $response. Backing off and trying again")
+            Thread.sleep(5000)
+        }
     }
 
     private fun getAccessToken(user: User): AccessToken {
