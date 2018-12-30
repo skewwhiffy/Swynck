@@ -35,4 +35,5 @@ compileTestKotlin {
 task populateTestData(type: JavaExec) {
     main = 'swynck.fake.onedrive.PopulateTestDataKt'
     classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
 }
