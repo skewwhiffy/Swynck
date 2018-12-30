@@ -33,6 +33,7 @@ object PopulateTestData {
     operator fun invoke() {
         val testDataFolder = File("testData").also { it.mkdirs() }
         if (!testDataFolder.exists()) throw Exception("Test data root folder does not exist")
+        println("Using test data folder ${testDataFolder.absolutePath}")
         val userData = UserData(testDataFolder)
         userData.getUser()
         val deltaData = DeltaData(userData, testDataFolder)
