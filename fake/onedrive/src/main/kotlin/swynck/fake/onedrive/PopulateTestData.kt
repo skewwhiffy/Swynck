@@ -130,6 +130,7 @@ class DeltaData(private val userData: UserData, private val testDataFolder: File
             .toMap()
 
         val user = userData.getUser()
+        // TODO: Only get access token if needed
         val accessToken = getAccessToken(user)
         var accessTokenLastRefresh = Instant.now()
 
