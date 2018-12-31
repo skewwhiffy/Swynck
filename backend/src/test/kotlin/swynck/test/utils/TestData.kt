@@ -1,8 +1,6 @@
 package swynck.test.utils
 
-import swynck.dto.onedrive.DriveItem
-import swynck.dto.onedrive.FolderItem
-import swynck.dto.onedrive.ParentReference
+import swynck.real.onedrive.dto.*
 import swynck.model.User
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger

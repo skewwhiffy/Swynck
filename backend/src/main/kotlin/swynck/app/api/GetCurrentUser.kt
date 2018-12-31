@@ -4,7 +4,7 @@ import org.http4k.core.Body
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import swynck.app.Dependencies
-import swynck.config.Json.auto
+import swynck.common.Json.auto
 import java.net.URI
 
 object GetCurrentUser {

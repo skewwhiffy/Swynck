@@ -1,7 +1,7 @@
 package swynck.db
 
-import swynck.dto.onedrive.DeltaResponse
-import swynck.dto.onedrive.DriveItem
+import swynck.real.onedrive.dto.DeltaResponse
+import swynck.real.onedrive.dto.DriveItem
 import swynck.model.User
 import swynck.util.executeAndFetch
 

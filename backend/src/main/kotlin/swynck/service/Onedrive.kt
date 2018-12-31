@@ -6,9 +6,9 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
 import swynck.config.Config
-import swynck.config.Json.auto
+import swynck.common.Json.auto
 import swynck.config.canAuthenticateOnedrive
-import swynck.dto.onedrive.DeltaResponse
+import swynck.real.onedrive.dto.DeltaResponse
 import swynck.model.User
 import java.net.PortUnreachableException
 import java.net.URI

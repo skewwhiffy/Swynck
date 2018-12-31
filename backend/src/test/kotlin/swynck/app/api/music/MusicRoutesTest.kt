@@ -5,9 +5,7 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
-import swynck.dto.onedrive.DeltaResponse
-import swynck.dto.onedrive.DriveItem
-import swynck.dto.onedrive.FileItem
+import swynck.real.onedrive.dto.*
 import swynck.test.utils.*
 
 class MusicRoutesTest {

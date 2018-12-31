@@ -38,6 +38,7 @@ dependencies {
     compile rootProject.ext.dep_kotlinx_coroutines
     compile rootProject.ext.dep_sql2o
     compile project(':backend:real:onedrive')
+    compile project(':backend:common')
 
     testCompile rootProject.ext.dep_junit
     testCompile rootProject.ext.dep_assertj

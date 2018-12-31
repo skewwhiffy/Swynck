@@ -8,7 +8,7 @@ import swynck.app.Dependencies
 import swynck.app.api.dto.FileDto
 import swynck.app.api.dto.FolderDto
 import swynck.app.api.dto.toDto
-import swynck.config.Json.auto
+import swynck.common.Json.auto
 
 object GetItems {
     operator fun invoke(dependencies: Dependencies): Response {

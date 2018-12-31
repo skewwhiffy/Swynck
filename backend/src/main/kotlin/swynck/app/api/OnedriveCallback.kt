@@ -5,7 +5,7 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.ACCEPTED
 import swynck.app.Dependencies
-import swynck.config.Json.auto
+import swynck.common.Json.auto
 
 object OnedriveCallback {
     operator fun invoke(
