@@ -1,13 +1,11 @@
-package swynck.service
+package swynck.real.onedrive.client
 
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
-import swynck.real.onedrive.client.OnedriveClient
-import swynck.test.utils.TestConfig
+import swynck.test.util.TestConfig
 import java.net.PortUnreachableException
 
-// TODO: Move to common?
-class OnedriveAuthenticationTests {
+class OnedriveClientAuthenticationTests {
     private val config = TestConfig()
     private val onedrive = OnedriveClient(config)
 

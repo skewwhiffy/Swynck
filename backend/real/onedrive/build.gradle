@@ -23,6 +23,7 @@ dependencies {
 
     testCompile rootProject.ext.dep_junit
     testCompile rootProject.ext.dep_assertj
+    testCompile project(':backend:test')
 }
 
 compileKotlin {

@@ -1,30 +1,18 @@
 package swynck.fake.onedrive
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
-import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES
-import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS
-import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_INTEGER_FOR_INTS
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.http4k.client.OkHttp
-import org.http4k.core.Body
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
-import org.http4k.format.ConfigurableJackson
-import swynck.fake.onedrive.Json.auto
+import swynck.common.Json
+import swynck.real.onedrive.client.AccessToken
+import swynck.real.onedrive.client.DriveResource
+import swynck.real.onedrive.dto.DeltaResponse
 import java.io.File
 import java.net.URI
 import java.net.URLEncoder
 import java.time.Duration
 import java.time.Instant
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 import java.util.*
 
 fun main(args: Array<String>) = PopulateTestData()
@@ -221,37 +209,6 @@ object OnedriveDetails {
     val scopes = setOf("files.readwrite", "offline_access")
 }
 
-// TODO: Commonize with Onedrive.kt
-data class DriveResource(
-    val id: String,
-    val owner: IdentitySetResource
-) {
-    companion object {
-        private val lens = Body.auto<DriveResource>().toLens()
-        operator fun invoke(response: Response) = lens(response)
-        data class IdentitySetResource(
-            val user: IdentityResource
-        ) {
-            companion object {
-                data class IdentityResource(
-                    val displayName: String,
-                    val id: String
-                )
-            }
-        }
-    }
-}
-data class AccessToken(
-    val refresh_token: String,
-    val access_token: String,
-    val expires_in: Int
-) {
-    companion object {
-        private val lens = Body.auto<AccessToken>().toLens()
-        operator fun invoke(response: Response) = lens(response)
-    }
-}
-
 // TODO: Commonize with User.kt
 data class User(
     val id: String,
@@ -260,71 +217,8 @@ data class User(
     val refreshToken: String
 )
 
-// Commonize with Json.kt
-@Suppress("unused")
-object Json : ConfigurableJackson(ObjectMapper()
-    .registerModule(KotlinModule()
-        .custom(ISO_OFFSET_DATE_TIME::format) { ZonedDateTime.parse(it, ISO_OFFSET_DATE_TIME) }
-    )
-    .disableDefaultTyping()
-    .setSerializationInclusion(NON_NULL)
-    .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .configure(FAIL_ON_IGNORED_PROPERTIES, false)
-    .configure(USE_BIG_DECIMAL_FOR_FLOATS, true)
-    .configure(USE_BIG_INTEGER_FOR_INTS, true)
-)
-
-inline fun <reified T> KotlinModule.custom(crossinline write: (T) -> String, crossinline read: (String) -> T) =
-    apply {
-        addDeserializer(T::class.java, object : JsonDeserializer<T>() {
-            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): T = read(p.text)
-        })
-        addSerializer(T::class.java, object : JsonSerializer<T>() {
-            override fun serialize(value: T?, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(write(value!!))
-        })
-    }
 
 data class DeltaRequestAndResponse(
     val requestUrl: URI?,
     val response: String
-)
-
-// TODO: Commonize with Resources.kt
-data class DeltaResponse(
-    @JsonProperty("@odata.nextLink")
-    val nextLink: URI?,
-    @JsonProperty("@odata.deltaLink")
-    val deltaLink: URI?,
-    val value: List<DriveItem>
-) {
-    companion object {
-        private val lens = Body.auto<DeltaResponse>().toLens()
-        operator fun invoke(response: Response) = lens(response)
-    }
-}
-
-data class DriveItem(
-    val id: String,
-    val name: String,
-    val file: FileItem?,
-    val folder: FolderItem?,
-    val `package`: PackageItem?,
-    val parentReference: ParentReference
-)
-
-data class FileItem(
-    val mimeType: String
-)
-
-data class FolderItem(
-    val childCount: Int
-)
-
-data class PackageItem(
-    val type: String
-)
-
-data class ParentReference(
-    val driveId: String,
-    val id: String
 )

@@ -9,7 +9,7 @@ import swynck.app.api.Api
 import swynck.app.api.UserFound
 import swynck.app.api.UserNotFound
 import swynck.db.Migrations
-import swynck.test.utils.TestConfig
+import swynck.test.util.TestConfig
 
 class CurrentUserTests {
     private val config = TestConfig()

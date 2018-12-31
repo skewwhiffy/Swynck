@@ -7,6 +7,7 @@ import swynck.daemon.DaemonTaskStatus
 import swynck.daemon.task.DaemonTask
 import swynck.db.Migrations
 import swynck.real.onedrive.client.OnedriveClient
+import swynck.test.util.TestConfig
 
 class TestDependencies : Dependencies by DependenciesImpl(
     TestConfig(),

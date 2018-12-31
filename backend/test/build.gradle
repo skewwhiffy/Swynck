@@ -15,15 +15,14 @@ repositories {
 }
 
 dependencies {
-    compile rootProject.ext.dep_http4k_client
-    compile rootProject.ext.dep_http4k_core
-    compile rootProject.ext.dep_http4k_format_jackson
     compile rootProject.ext.dep_kotlin_reflect
     compile rootProject.ext.dep_kotlin_stdlib
-    compile project(':backend:real:onedrive')
+    compile rootProject.ext.dep_kotlinx_coroutines
+    compile project(':backend:common')
 
     testCompile rootProject.ext.dep_junit
     testCompile rootProject.ext.dep_assertj
+    testCompile rootProject.ext.dep_mockk
 }
 
 compileKotlin {
@@ -31,10 +30,4 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
-}
-
-task populateTestData(type: JavaExec) {
-    main = 'swynck.fake.onedrive.PopulateTestDataKt'
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
 }
