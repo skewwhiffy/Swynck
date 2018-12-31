@@ -15,6 +15,7 @@ repositories {
 }
 
 dependencies {
+    compile rootProject.ext.dep_envy
     compile rootProject.ext.dep_http4k_format_jackson
     compile rootProject.ext.dep_kotlin_reflect
     compile rootProject.ext.dep_kotlin_stdlib

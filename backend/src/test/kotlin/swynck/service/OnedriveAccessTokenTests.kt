@@ -6,7 +6,7 @@ import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.sql2o.Sql2o
 import swynck.app.Dependencies
-import swynck.model.User
+import swynck.common.model.User
 import swynck.test.utils.TestDependencies
 import java.io.File
 

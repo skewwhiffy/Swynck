@@ -1,4 +1,4 @@
-package swynck.model
+package swynck.common.model
 
 data class User(
     val id: String,

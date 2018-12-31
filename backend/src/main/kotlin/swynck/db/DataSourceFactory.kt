@@ -2,7 +2,7 @@ package swynck.db
 
 import org.h2.jdbcx.JdbcDataSource
 import org.sql2o.Sql2o
-import swynck.config.Config
+import swynck.common.Config
 
 open class DataSourceFactory(private val config: Config) {
     private val sql2o by lazy { Sql2o(dataSource()) }

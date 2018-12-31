@@ -9,9 +9,9 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
 import org.junit.Test
 import swynck.app.api.Api
-import swynck.model.User
-import swynck.service.AccessToken
-import swynck.service.Onedrive
+import swynck.common.model.User
+import swynck.real.onedrive.client.AccessToken
+import swynck.real.onedrive.client.OnedriveClient
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.with
 import java.util.*
@@ -27,7 +27,7 @@ class OneDriveCallbackTests {
         )
         val id = "${UUID.randomUUID()}"
         val displayName = "${UUID.randomUUID()}"
-        val oneDrive = mockk<Onedrive>()
+        val oneDrive = mockk<OnedriveClient>()
         val dependencies = TestDependencies().with(oneDrive)
         val api = Api(dependencies)
         val redirectUri = "${UUID.randomUUID()}.com"

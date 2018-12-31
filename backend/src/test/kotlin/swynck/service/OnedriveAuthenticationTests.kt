@@ -2,12 +2,14 @@ package swynck.service
 
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
+import swynck.real.onedrive.client.OnedriveClient
 import swynck.test.utils.TestConfig
 import java.net.PortUnreachableException
 
+// TODO: Move to common?
 class OnedriveAuthenticationTests {
     private val config = TestConfig()
-    private val onedrive = Onedrive(config)
+    private val onedrive = OnedriveClient(config)
 
     @Test
     fun `when using unsupported callback port then authentication URL blows up`() {

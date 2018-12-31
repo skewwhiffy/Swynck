@@ -2,7 +2,10 @@ package swynck.config
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import swynck.common.Config
+import swynck.common.canAuthenticateOnedrive
 
+// TODO: Move to common
 class ConfigTests {
     @Test
     fun `config allows authentication when port is configured`() {

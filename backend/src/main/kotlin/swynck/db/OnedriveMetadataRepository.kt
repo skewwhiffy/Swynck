@@ -2,7 +2,7 @@ package swynck.db
 
 import swynck.real.onedrive.dto.DeltaResponse
 import swynck.real.onedrive.dto.DriveItem
-import swynck.model.User
+import swynck.common.model.User
 import swynck.util.executeAndFetch
 
 class OnedriveMetadataRepository(private val dataSourceFactory: DataSourceFactory) {

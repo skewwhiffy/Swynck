@@ -1,4 +1,4 @@
-package swynck.config
+package swynck.common
 
 import com.statemachinesystems.envy.Default
 import com.statemachinesystems.envy.Envy
@@ -16,9 +16,9 @@ interface Config {
 }
 
 private val callbackPorts = setOf(
-    8080,
-    9000,
-    38080
+        8080,
+        9000,
+        38080
 )
 
 fun Config.canAuthenticateOnedrive() = callbackPorts.contains(port())

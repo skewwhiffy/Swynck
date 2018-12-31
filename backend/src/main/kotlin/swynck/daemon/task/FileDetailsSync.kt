@@ -2,7 +2,7 @@ package swynck.daemon.task
 
 import kotlinx.coroutines.delay
 import swynck.app.Dependencies
-import swynck.model.User
+import swynck.common.model.User
 import java.time.Duration
 
 class FileDetailsSync(

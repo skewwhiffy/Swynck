@@ -1,6 +1,6 @@
 package swynck.test.utils
 
-import swynck.config.Config
+import swynck.common.Config
 import java.net.ServerSocket
 import java.util.*
 

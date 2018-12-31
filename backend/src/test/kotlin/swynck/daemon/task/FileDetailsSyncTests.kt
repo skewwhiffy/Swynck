@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.Test
 import org.sql2o.Sql2o
-import swynck.model.User
+import swynck.common.model.User
 import swynck.test.utils.TestDependencies
 import java.io.File
 import java.net.URI

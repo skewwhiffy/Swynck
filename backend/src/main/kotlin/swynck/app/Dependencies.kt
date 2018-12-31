@@ -1,11 +1,11 @@
 package swynck.app
 
-import swynck.config.Config
+import swynck.common.Config
 import swynck.daemon.DaemonRunner
 import swynck.db.DataSourceFactory
 import swynck.db.OnedriveMetadataRepository
 import swynck.db.UserRepository
-import swynck.service.Onedrive
+import swynck.real.onedrive.client.OnedriveClient
 
 interface Dependencies {
     companion object {
@@ -15,7 +15,7 @@ interface Dependencies {
     val dataSourceFactory: DataSourceFactory
     val daemonRunner: DaemonRunner
     val metadata: OnedriveMetadataRepository
-    val oneDrive: Onedrive
+    val oneDrive: OnedriveClient
     val userRepository: UserRepository
 }
 
@@ -25,6 +25,6 @@ class DependenciesImpl(
 ): Dependencies {
     override val dataSourceFactory = DataSourceFactory(config)
     override val metadata = OnedriveMetadataRepository(dataSourceFactory)
-    override val oneDrive = Onedrive(config)
+    override val oneDrive = OnedriveClient(config)
     override val userRepository = UserRepository(dataSourceFactory)
 }
