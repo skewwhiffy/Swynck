@@ -1,15 +1,14 @@
 package swynck.real.onedrive.client
 
 import org.http4k.client.OkHttp
-import org.http4k.core.Body
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.http4k.core.Response
 import swynck.common.Config
 import swynck.common.canAuthenticateOnedrive
 import swynck.common.model.User
-import swynck.common.Json.auto
+import swynck.real.onedrive.dto.AccessToken
 import swynck.real.onedrive.dto.DeltaResponse
+import swynck.real.onedrive.dto.DriveResource
 import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
@@ -97,36 +96,5 @@ class OnedriveClient(private val config: Config) {
                 .header("Authorization", "bearer ${accessToken.access_token}")
                 .let { client(it) }
                 .let { DeltaResponse(it) }
-    }
-}
-
-data class DriveResource(
-        val id: String,
-        val owner: IdentitySetResource
-) {
-    companion object {
-        private val lens = Body.auto<DriveResource>().toLens()
-        operator fun invoke(response: Response) = lens(response)
-        data class IdentitySetResource(
-                val user: IdentityResource
-        ) {
-            companion object {
-                data class IdentityResource(
-                        val displayName: String,
-                        val id: String
-                )
-            }
-        }
-    }
-}
-
-data class AccessToken(
-        val refresh_token: String,
-        val access_token: String,
-        val expires_in: Int
-) {
-    companion object {
-        private val lens = Body.auto<AccessToken>().toLens()
-        operator fun invoke(response: Response) = lens(response)
     }
 }

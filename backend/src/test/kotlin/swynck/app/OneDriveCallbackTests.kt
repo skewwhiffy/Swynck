@@ -10,8 +10,8 @@ import org.http4k.core.Status.Companion.ACCEPTED
 import org.junit.Test
 import swynck.app.api.Api
 import swynck.common.model.User
-import swynck.real.onedrive.client.AccessToken
 import swynck.real.onedrive.client.OnedriveClient
+import swynck.real.onedrive.dto.AccessToken
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.with
 import java.util.*

@@ -5,9 +5,9 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import swynck.common.Json
-import swynck.real.onedrive.client.AccessToken
-import swynck.real.onedrive.client.DriveResource
+import swynck.real.onedrive.dto.AccessToken
 import swynck.real.onedrive.dto.DeltaResponse
+import swynck.real.onedrive.dto.DriveResource
 import java.io.File
 import java.net.URI
 import java.net.URLEncoder
