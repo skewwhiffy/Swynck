@@ -21,6 +21,7 @@ dependencies {
     compile rootProject.ext.dep_kotlin_reflect
     compile rootProject.ext.dep_kotlin_stdlib
     compile project(':backend:real:onedrive')
+    compile project(':backend:test')
 
     testCompile rootProject.ext.dep_junit
     testCompile rootProject.ext.dep_assertj
