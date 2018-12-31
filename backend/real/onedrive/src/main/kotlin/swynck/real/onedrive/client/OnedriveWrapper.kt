@@ -13,7 +13,7 @@ import java.net.PortUnreachableException
 import java.net.URI
 import java.net.URLEncoder
 
-class OnedriveClient(private val config: Config) {
+class OnedriveWrapper(private val config: Config) {
     @Suppress("SpellCheckingInspection")
     companion object {
         private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"

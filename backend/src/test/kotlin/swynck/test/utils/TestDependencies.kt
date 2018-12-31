@@ -6,7 +6,7 @@ import swynck.daemon.DaemonRunner
 import swynck.daemon.DaemonTaskStatus
 import swynck.daemon.task.DaemonTask
 import swynck.db.Migrations
-import swynck.real.onedrive.client.OnedriveClient
+import swynck.real.onedrive.client.OnedriveWrapper
 import swynck.test.util.TestConfig
 
 class TestDependencies : Dependencies by DependenciesImpl(
@@ -16,7 +16,7 @@ class TestDependencies : Dependencies by DependenciesImpl(
     init { Migrations(this).run() }
 }
 
-fun Dependencies.with(onedriveClient: OnedriveClient) = object : Dependencies by this {
+fun Dependencies.with(onedriveClient: OnedriveWrapper) = object : Dependencies by this {
     override val oneDrive = onedriveClient
 }
 
