@@ -62,8 +62,9 @@ class DeltaData(
         val deltaFolder = File(testDataFolder, "onedrive/deltas").also { it.mkdir() }
         if (!deltaFolder.isDirectory) throw Exception("Deltas folder does not exist")
         var nextLink: URI? = null
-        var files = 0
-        var folders = 0
+        var batches = 0
+        val files = mutableSetOf<String>()
+        val folders = mutableSetOf<String>()
         val nextLinkUrlMap = deltaFolder
             .listFiles()
             .map { it.readText() }
@@ -87,9 +88,10 @@ class DeltaData(
                 deltaString
             )
             val delta = Json.asA(deltaString, DeltaResponse::class)
-            files += delta.value.count { it.file != null }
-            folders += delta.value.count { it.folder != null }
-            println("$files files and $folders folders link: ${delta.nextLink}")
+            files += delta.value.filter { it.file != null }.map { it.name }
+            folders += delta.value.filter { it.folder != null }.map { it.name }
+            batches++
+            println("Populated $batches batches ${files.size} files and ${folders.size} folders")
             if (nextLink == delta.nextLink) {
                 println("Next link has not changed")
                 break
