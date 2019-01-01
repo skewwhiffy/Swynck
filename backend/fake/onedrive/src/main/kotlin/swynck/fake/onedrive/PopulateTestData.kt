@@ -89,7 +89,7 @@ class DeltaData(
             val delta = Json.asA(deltaString, DeltaResponse::class)
             files += delta.value.count { it.file != null }
             folders += delta.value.count { it.folder != null }
-            println("$files files and $folders folders so far")
+            println("$files files and $folders folders link: ${delta.nextLink}")
             if (nextLink == delta.nextLink) {
                 println("Next link has not changed")
                 break

@@ -44,17 +44,18 @@ class OnedriveWrapper(
 
     fun getAccessToken(authCode: String): AccessToken {
         val request = mapOf(
-                "client_id" to clientId,
-                "redirect_uri" to redirectUri.toString(),
-                "client_secret" to clientSecret,
-                "grant_type" to "authorization_code",
-                "code" to authCode
+            "client_id" to clientId,
+            "redirect_uri" to redirectUri.toString(),
+            "client_secret" to clientSecret,
+            "grant_type" to "authorization_code",
+            "code" to authCode
         )
-                .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
-                .map { "${it.key}=${it.value}" }
-                .joinToString("&")
-                .let { Request(Method.POST, "oauth20_token.srf").body(it) }
-                .header("Content-Type", "application/x-www-form-urlencoded")
+            .removeClientSecretIfForPublicClients()
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(Method.POST, "oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
         val response = onedriveClients.authClient(request)
         return if (response.status.successful) AccessToken(response)
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
@@ -62,17 +63,18 @@ class OnedriveWrapper(
 
     fun getAccessToken(user: User): AccessToken {
         val request = mapOf(
-                "client_id" to clientId,
-                "redirect_uri" to user.redirectUri,
-                "client_secret" to clientSecret,
-                "grant_type" to "refresh_token",
-                "refresh_token" to user.refreshToken
+            "client_id" to clientId,
+            "redirect_uri" to user.redirectUri,
+            "client_secret" to clientSecret,
+            "grant_type" to "refresh_token",
+            "refresh_token" to user.refreshToken
         )
-                .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
-                .map { "${it.key}=${it.value}" }
-                .joinToString("&")
-                .let { Request(Method.POST, "oauth20_token.srf").body(it) }
-                .header("Content-Type", "application/x-www-form-urlencoded")
+            .removeClientSecretIfForPublicClients()
+            .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+            .let { Request(Method.POST, "oauth20_token.srf").body(it) }
+            .header("Content-Type", "application/x-www-form-urlencoded")
         val response = onedriveClients.authClient(request)
         return if (response.status.successful) AccessToken(response)
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
@@ -96,8 +98,12 @@ class OnedriveWrapper(
             accessToken,
             URI("v1.0/me/drive/root/delta")
         )
-        return Request(Method.GET, nextLink.path)
+        return Request(Method.GET, "${nextLink.path}?${nextLink.query}")
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { onedriveClients.graphClient(it) }
     }
+
+    private fun Map<String, String>.removeClientSecretIfForPublicClients() = if (get("redirect_uri")?.contains("localhost") != false) this
+    else filter { it.key != "client_secret" }.toMap()
+
 }
