@@ -2,7 +2,9 @@ package swynck.real.onedrive.client
 
 import org.http4k.core.Method
 import org.http4k.core.Request
+import org.http4k.core.Response
 import swynck.common.Config
+import swynck.common.Json
 import swynck.common.canAuthenticateOnedrive
 import swynck.common.model.User
 import swynck.real.onedrive.dto.AccessToken
@@ -18,20 +20,20 @@ class OnedriveWrapper(
 ) {
     @Suppress("SpellCheckingInspection")
     companion object {
-        private const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
-        private const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
-        private val scopes = setOf("files.readwrite", "offline_access")
+        const val clientId = "21133f26-e5d8-486b-8b27-0801db6496a9"
+        const val clientSecret = "gcyhkJZK73!$:zqHNBE243}"
+        val scopes = setOf("files.readwrite", "offline_access")
     }
 
-    private val redirectUri = "http://localhost:${config.port()}"
+    private val redirectUri = URI("http://localhost:${config.port()}")
 
-    fun authenticationUrl(): URI {
+    fun authenticationUrl(redirectUri: URI = this.redirectUri): URI {
         return if (!config.canAuthenticateOnedrive()) {
             throw PortUnreachableException("Authentication not supported on port ${config.port()}")
         } else mapOf(
                 "client_id" to clientId,
                 "scope" to scopes.joinToString(" "),
-                "redirect_uri" to redirectUri,
+                "redirect_uri" to redirectUri.toString(),
                 "response_type" to "code"
         )
                 .mapValues { v -> v.value.let { URLEncoder.encode(it, "UTF-8") } }
@@ -43,7 +45,7 @@ class OnedriveWrapper(
     fun getAccessToken(authCode: String): AccessToken {
         val request = mapOf(
                 "client_id" to clientId,
-                "redirect_uri" to redirectUri,
+                "redirect_uri" to redirectUri.toString(),
                 "client_secret" to clientSecret,
                 "grant_type" to "authorization_code",
                 "code" to authCode
@@ -82,17 +84,20 @@ class OnedriveWrapper(
                 .let { onedriveClients.graphClient(it) }
                 .let { DriveResource(it) }
                 .let { it.owner.user }
-                .let { User(it.id, it.displayName, redirectUri, accessToken.refresh_token) }
+                .let { User(it.id, it.displayName, redirectUri.toString(), accessToken.refresh_token) }
     }
 
-    fun getDelta(accessToken: AccessToken, nextLink: URI? = null): DeltaResponse {
-        nextLink ?: return getDelta(
-                accessToken,
-                URI("v1.0/me/drive/root/delta")
+    fun getDelta(accessToken: AccessToken, nextLink: URI? = null) = getDeltaRaw(accessToken, nextLink)
+        .bodyString()
+        .let { Json.asA(it, DeltaResponse::class) }
+
+    fun getDeltaRaw(accessToken: AccessToken, nextLink: URI? = null): Response {
+        nextLink ?: return getDeltaRaw(
+            accessToken,
+            URI("v1.0/me/drive/root/delta")
         )
         return Request(Method.GET, nextLink.path)
-                .header("Authorization", "bearer ${accessToken.access_token}")
-                .let { onedriveClients.graphClient(it) }
-                .let { DeltaResponse(it) }
+            .header("Authorization", "bearer ${accessToken.access_token}")
+            .let { onedriveClients.graphClient(it) }
     }
 }

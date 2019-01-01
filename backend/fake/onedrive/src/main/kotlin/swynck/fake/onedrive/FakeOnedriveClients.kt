@@ -35,15 +35,3 @@ class FakeOnedriveClients : OnedriveClients {
         .lens
         .inject(accessToken, this)
 }
-
-data class AuthRequest(
-    val client_id: String,
-    val redirect_uri: String,
-    val client_secret: String,
-    val grant_type: String,
-    val code: String
-) {
-    companion object {
-        val lens = Body.auto<AuthRequest>().toLens()
-    }
-}
