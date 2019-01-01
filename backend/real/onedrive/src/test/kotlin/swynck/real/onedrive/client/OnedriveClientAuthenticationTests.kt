@@ -7,7 +7,7 @@ import java.net.PortUnreachableException
 
 class OnedriveClientAuthenticationTests {
     private val config = TestConfig()
-    private val onedrive = OnedriveWrapper(config)
+    private val onedrive = OnedriveWrapper(OnedriveClientsImpl(), config)
 
     @Test
     fun `when using unsupported callback port then authentication URL blows up`() {

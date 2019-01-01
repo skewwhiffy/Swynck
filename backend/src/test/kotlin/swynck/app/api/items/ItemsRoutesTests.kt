@@ -8,6 +8,7 @@ import org.junit.Test
 import swynck.real.onedrive.dto.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
+import swynck.test.utils.asParentReference
 import swynck.test.utils.hasPingEndpoint
 
 class ItemsRoutesTests {
