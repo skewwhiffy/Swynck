@@ -27,6 +27,7 @@ class OnedriveWrapper(
 
     private val redirectUri = URI("http://localhost:${config.port()}")
 
+    // TODO: Pass in redirect URI into class
     fun authenticationUrl(redirectUri: URI = this.redirectUri): URI {
         return if (!config.canAuthenticateOnedrive()) {
             throw PortUnreachableException("Authentication not supported on port ${config.port()}")
@@ -42,7 +43,7 @@ class OnedriveWrapper(
                 .let { URI("https://login.live.com/oauth20_authorize.srf?$it") }
     }
 
-    fun getAccessToken(authCode: String): AccessToken {
+    fun getAccessToken(authCode: String, redirectUri: URI = this.redirectUri): AccessToken {
         val request = mapOf(
             "client_id" to clientId,
             "redirect_uri" to redirectUri.toString(),
@@ -80,7 +81,7 @@ class OnedriveWrapper(
         else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
     }
 
-    fun getUser(accessToken: AccessToken): User {
+    fun getUser(accessToken: AccessToken, redirectUri: URI = this.redirectUri): User {
         return Request(Method.GET, "v1.0/me/drive")
                 .header("Authorization", "bearer ${accessToken.access_token}")
                 .let { onedriveClients.graphClient(it) }

@@ -18,6 +18,7 @@ import java.util.*
 fun main(args: Array<String>) = PopulateTestData()
 
 object PopulateTestData {
+    private val redirectUri = URI("https://login.live.com/oauth20_desktop.srf")
     private val fakeOnedriveTestData = FakeOnedriveTestData()
     private val onedrive = OnedriveWrapper(OnedriveClientsImpl(), Config())
 
@@ -32,14 +33,14 @@ object PopulateTestData {
     private fun getUser(): User {
         fakeOnedriveTestData.user?.let { return it }
         val authCode = getAuthCode()
-        val accessToken = onedrive.getAccessToken(authCode)
-        val user = onedrive.getUser(accessToken)
+        val accessToken = onedrive.getAccessToken(authCode, redirectUri)
+        val user = onedrive.getUser(accessToken, redirectUri)
         fakeOnedriveTestData.user = user
         return user
     }
 
     private fun getAuthCode(): String {
-        val authUrl = onedrive.authenticationUrl(URI("https://login.live.com/oauth20_desktop.srf"))
+        val authUrl = onedrive.authenticationUrl(redirectUri)
         println("Please visit $authUrl and paste response URL back here")
         val callbackUrl = readLine()!!
         return callbackUrl
