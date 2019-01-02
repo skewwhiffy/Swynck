@@ -22,8 +22,10 @@ import java.util.*
 
 class FakeOnedriveClients : OnedriveClients {
     private val fakeOnedriveTestData = FakeOnedriveTestData()
+    private var deltaLinkRequested = false
     var currentAccessToken = generateRandomAccessToken()
     val authCode = "${UUID.randomUUID()}"
+    val hasDeltaLinkBeenRequested get() = deltaLinkRequested
 
     override val authClient = { it: Request -> handleAuth(it) }
     override val graphClient = routes(
@@ -48,8 +50,16 @@ class FakeOnedriveClients : OnedriveClients {
         .inject(accessToken, this)
 
     private fun getDelta(request: Request): Response {
-        val delta = fakeOnedriveTestData.getDelta(URI(request.uri.toString())) ?: return Response(NOT_FOUND)
-        return Response(OK).withBody(delta)
+        fakeOnedriveTestData.getDelta(URI(request.uri.toString()))?.let { return Response(OK).withBody(it) }
+        val deltaLink = fakeOnedriveTestData.getDeltaLink() ?: return Response(NOT_FOUND)
+        if (deltaLink.queryMap()["token"] != request.uri.query.queryMap()["token"]) return Response(NOT_FOUND)
+        deltaLinkRequested = true
+        return DeltaResponse(
+            null,
+            deltaLink,
+            listOf()
+        )
+            .let { Response(OK).withBody(it) }
     }
 
     private fun getUser(request: Request): Response {

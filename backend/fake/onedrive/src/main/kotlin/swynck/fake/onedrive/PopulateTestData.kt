@@ -25,9 +25,9 @@ object PopulateTestData {
 
     operator fun invoke() {
         fakeOnedriveTestData.ensureExists()
-        println("Using test data folder ${fakeOnedriveTestData.rootFolder.absolutePath}")
+        println("Using test data folder ${FakeOnedriveTestData.rootFolder.absolutePath}")
         val user = getUser()
-        val deltaData = DeltaData(onedrive, user, fakeOnedriveTestData.rootFolder)
+        val deltaData = DeltaData(onedrive, user, FakeOnedriveTestData.rootFolder)
         deltaData.populate()
     }
 

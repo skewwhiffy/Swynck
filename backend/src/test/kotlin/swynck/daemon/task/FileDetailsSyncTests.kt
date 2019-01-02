@@ -1,34 +1,26 @@
 package swynck.daemon.task
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import swynck.common.model.User
 import swynck.test.utils.TestDependencies
 import swynck.util.executeAndFetch
-import java.net.URI
 
 class FileDetailsSyncTests {
     private val dependencies = TestDependencies()
+    private val user: User
+    private val sut: FileDetailsSync
+
+    init {
+        dependencies.addValidUser()
+        user = dependencies.userRepository.getUser()!!
+        sut = FileDetailsSync(user, dependencies)
+    }
 
     @Test
     fun `folders are populated`() {
-        dependencies.addValidUser()
-        val user = dependencies.userRepository.getUser()!!
-        val accessToken = dependencies.oneDrive.getAccessToken(user)
-
-        var nextLink: URI? = null
-
-        while (true) {
-            val delta = dependencies.oneDrive.getDelta(accessToken, nextLink)
-            if (nextLink == delta.nextLink) {
-                println("Next link has not changed")
-                return
-            }
-            nextLink = delta.nextLink
-            if (nextLink == null) {
-                println("Next link is null")
-                println("Delta link is ${delta.deltaLink}")
-                return
-            }
-            dependencies.metadata.insert(delta)
+        while (!dependencies.onedriveClients.hasDeltaLinkBeenRequested) {
+            runBlocking { sut.runSingle() }
             dependencies.dataSourceFactory.sql2o().use {
                 val fileCount = "SELECT COUNT(*) FROM files"
                     .let(it::createQuery)
