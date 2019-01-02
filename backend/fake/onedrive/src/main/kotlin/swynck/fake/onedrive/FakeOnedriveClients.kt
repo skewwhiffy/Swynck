@@ -1,27 +1,36 @@
 package swynck.fake.onedrive
 
-import org.http4k.core.Body
-import org.http4k.core.HttpHandler
+import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
+import org.http4k.core.Status.Companion.NOT_IMPLEMENTED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNAUTHORIZED
-import swynck.common.Json.auto
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import swynck.fake.onedrive.testdata.FakeOnedriveTestData
 import swynck.real.onedrive.client.OnedriveClients
 import swynck.real.onedrive.dto.AccessToken
+import swynck.real.onedrive.dto.DriveResource
+import swynck.real.onedrive.dto.DriveResource.Companion.IdentitySetResource
+import swynck.real.onedrive.dto.DriveResource.Companion.IdentitySetResource.Companion.IdentityResource
 import java.util.*
 
 class FakeOnedriveClients : OnedriveClients {
+    private val fakeOnedriveTestData = FakeOnedriveTestData()
     var currentAccessToken = generateRandomAccessToken()
     val authCode = "${UUID.randomUUID()}"
 
     override val authClient = { it: Request -> handleAuth(it) }
-    override val graphClient: HttpHandler
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val graphClient = routes(
+        "v1.0/me/drive" bind GET to { getUser(it) },
+        "v1.0/me/drive/root/delta" bind GET to { getDelta(it) }
+    )
 
     private fun handleAuth(request: Request): Response {
         val bodyMap = request.bodyString().split("&").map { it.split("=") }.map { it[0] to it[1] }.toMap()
-        if (bodyMap["code"] != authCode) return Response(UNAUTHORIZED)
+        if (bodyMap["code"] != authCode && bodyMap["refresh_token"] != currentAccessToken.refresh_token) return Response(UNAUTHORIZED)
         return Response(OK).withBody(currentAccessToken)
     }
 
@@ -34,4 +43,24 @@ class FakeOnedriveClients : OnedriveClients {
     private fun Response.withBody(accessToken: AccessToken) = AccessToken
         .lens
         .inject(accessToken, this)
+
+    private fun getDelta(request: Request): Response {
+        TODO()
+    }
+
+    private fun getUser(request: Request): Response {
+        if (request.header("Authorization") != "bearer ${currentAccessToken.access_token}") return Response(UNAUTHORIZED)
+        val user = fakeOnedriveTestData.user ?: return Response(INTERNAL_SERVER_ERROR).body("No test user found")
+        val id = IdentityResource(
+            user.displayName,
+            user.id
+        )
+        val setResource = IdentitySetResource(id)
+        val resource = DriveResource(user.id, setResource)
+        return Response(OK).withBody(resource)
+    }
+
+    private fun Response.withBody(resource: DriveResource) = DriveResource
+        .lens
+        .inject(resource, this)
 }

@@ -44,6 +44,7 @@ dependencies {
     testCompile rootProject.ext.dep_assertj
     testCompile rootProject.ext.dep_mockk
     testCompile project(':backend:test')
+    testCompile project(':backend:fake:onedrive')
 }
 
 compileKotlin {

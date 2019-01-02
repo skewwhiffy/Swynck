@@ -3,6 +3,7 @@ package swynck.real.onedrive.client
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.OK
 import swynck.common.Config
 import swynck.common.Json
 import swynck.common.canAuthenticateOnedrive
@@ -75,7 +76,7 @@ class OnedriveWrapper(
             .header("Content-Type", "application/x-www-form-urlencoded")
         val response = onedriveClients.authClient(request)
         return if (response.status.successful) AccessToken(response)
-        else throw IllegalArgumentException("Problem getting access token: ${response.bodyString()}")
+        else throw IllegalArgumentException("Problem getting access token: status ${response.status} message: ${response.bodyString()}")
     }
 
     fun getUser(accessToken: AccessToken, redirectUri: URI): User {
@@ -88,6 +89,7 @@ class OnedriveWrapper(
     }
 
     fun getDelta(accessToken: AccessToken, nextLink: URI? = null) = getDeltaRaw(accessToken, nextLink)
+        .also { if (it.status != OK) throw Exception("Could not get delta: status: ${it.status} message: ${it.body}")}
         .bodyString()
         .let { Json.asA(it, DeltaResponse::class) }
 
