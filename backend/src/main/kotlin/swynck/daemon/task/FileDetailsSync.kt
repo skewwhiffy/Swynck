@@ -13,6 +13,8 @@ class FileDetailsSync(
         private val pollingInterval = Duration.ofSeconds(15)!!
     }
 
+    val exceptions = mutableListOf<Exception>()
+
     override suspend fun runSingle() {
         try {
             val nextLink = dependencies.userRepository.getNextLink(user)
@@ -34,6 +36,7 @@ class FileDetailsSync(
         } catch (e: Exception) {
             println(e)
             e.printStackTrace()
+            exceptions += e
             dependencies.ticker.delay(pollingInterval)
         }
     }

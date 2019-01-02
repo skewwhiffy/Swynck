@@ -10,11 +10,9 @@ import swynck.real.onedrive.client.OnedriveClientsImpl
 import swynck.real.onedrive.client.OnedriveWrapper
 import swynck.real.onedrive.dto.AccessToken
 import swynck.real.onedrive.dto.DeltaResponse
-import java.io.File
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 
 fun main(args: Array<String>) = PopulateTestData()
 
@@ -25,9 +23,9 @@ object PopulateTestData {
 
     operator fun invoke() {
         fakeOnedriveTestData.ensureExists()
-        println("Using test data folder ${FakeOnedriveTestData.rootFolder.absolutePath}")
+        println("Using test data folder ${fakeOnedriveTestData.rootFolder.absolutePath}")
         val user = getUser()
-        val deltaData = DeltaData(onedrive, user, FakeOnedriveTestData.rootFolder)
+        val deltaData = DeltaData(fakeOnedriveTestData, onedrive, user)
         deltaData.populate()
     }
 
@@ -52,23 +50,13 @@ object PopulateTestData {
 }
 
 class DeltaData(
+    private val fakeOnedriveTestData: FakeOnedriveTestData,
     private val onedrive: OnedriveWrapper,
-    private val user: User,
-    private val testDataFolder: File
+    private val user: User
 ) {
     fun populate() {
-        val deltaFolder = File(testDataFolder, "onedrive/deltas").also { it.mkdir() }
-        if (!deltaFolder.isDirectory) throw Exception("Deltas folder does not exist")
         var nextLink: URI? = null
         var batches = 0
-        val files = mutableSetOf<String>()
-        val folders = mutableSetOf<String>()
-        val nextLinkUrlMap = deltaFolder
-            .listFiles()
-            .map { it.readText() }
-            .map { Json.asA(it, DeltaRequestAndResponse::class) }
-            .map { it.requestUrl to it.response }
-            .toMap()
 
         var accessToken = lazy { onedrive.getAccessToken(user) }
         var accessTokenLastRefresh = Instant.now()
@@ -80,29 +68,23 @@ class DeltaData(
                 accessTokenLastRefresh = Instant.now()
             }
             var cached = true
-            val deltaString = nextLinkUrlMap.get(nextLink) ?: getDelta(accessToken.value, nextLink).also { cached = false }
-            val payload = DeltaRequestAndResponse(
-                nextLink,
-                deltaString
-            )
-            val delta = Json.asA(deltaString, DeltaResponse::class)
-            files += delta.value.filter { it.file != null }.map { it.name }
-            folders += delta.value.filter { it.folder != null }.map { it.name }
+            val deltaResponse = fakeOnedriveTestData.getDelta(nextLink)
+                ?: getDelta(accessToken.value, nextLink)
+                    .also { cached = false }
+                    .also { fakeOnedriveTestData.putDelta(nextLink, it) }
+                    .let { Json.asA(it, DeltaResponse::class) }
             batches++
-            println("Populated $batches batches ${files.size} files and ${folders.size} folders ${if (cached) "CACHED" else ""}")
-            if (!nextLinkUrlMap.contains(nextLink)) {
-                File(deltaFolder, "${UUID.randomUUID()}.json").writeText(Json.asJsonString(payload))
-            }
-            if (nextLink == delta.nextLink) {
+            println("Populated $batches batches ${if (cached) "CACHED" else ""}")
+            if (nextLink == deltaResponse.nextLink) {
                 println("Next link has not changed")
                 break
             }
-            if (delta.nextLink == null) {
+            if (deltaResponse.nextLink == null) {
                 println("Next link is null")
-                println("Delta link is ${delta.deltaLink}")
+                println("Delta link is ${deltaResponse.deltaLink}")
                 break
             }
-            nextLink = delta.nextLink
+            nextLink = deltaResponse.nextLink
         }
     }
 
@@ -117,8 +99,3 @@ class DeltaData(
         }
     }
 }
-
-data class DeltaRequestAndResponse(
-    val requestUrl: URI?,
-    val response: String
-)
