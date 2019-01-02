@@ -2,6 +2,7 @@ package swynck.common
 
 import com.statemachinesystems.envy.Default
 import com.statemachinesystems.envy.Envy
+import java.net.URI
 
 interface Config {
     companion object {
@@ -14,6 +15,8 @@ interface Config {
     @Default("jdbc:h2:~/.config/swynck/swynck")
     fun db(): String
 }
+
+fun Config.defaultRedirectUri() = URI("http://localhost:${port()}")
 
 private val callbackPorts = setOf(
         8080,
