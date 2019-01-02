@@ -98,7 +98,8 @@ class OnedriveWrapper(
             accessToken,
             URI("v1.0/me/drive/root/delta")
         )
-        return Request(Method.GET, "${nextLink.path}?${nextLink.query}")
+        val querySuffix = nextLink.query?.let { "?$it" } ?: ""
+        return Request(Method.GET, "${nextLink.path}$querySuffix")
             .header("Authorization", "bearer ${accessToken.access_token}")
             .let { onedriveClients.graphClient(it) }
     }

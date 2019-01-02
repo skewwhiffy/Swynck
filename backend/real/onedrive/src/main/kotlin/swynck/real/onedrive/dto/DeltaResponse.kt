@@ -7,14 +7,14 @@ import java.net.URI
 import swynck.common.Json.auto
 
 data class DeltaResponse(
-        @JsonProperty("@odata.nextLink")
-        val nextLink: URI?,
-        @JsonProperty("@odata.deltaLink")
-        val deltaLink: URI?,
-        val value: List<DriveItem>
+    @JsonProperty("@odata.nextLink")
+    val nextLink: URI?,
+    @JsonProperty("@odata.deltaLink")
+    val deltaLink: URI?,
+    val value: List<DriveItem>
 ) {
     companion object {
-        private val lens = Body.auto<DeltaResponse>().toLens()
+        val lens = Body.auto<DeltaResponse>().toLens()
         operator fun invoke(response: Response) = lens(response)
     }
 }

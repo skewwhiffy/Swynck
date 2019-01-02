@@ -3,6 +3,7 @@ package swynck.fake.onedrive
 import org.http4k.core.Status.Companion.OK
 import swynck.common.Config
 import swynck.common.Json
+import swynck.common.extensions.queryMap
 import swynck.common.model.User
 import swynck.fake.onedrive.testdata.FakeOnedriveTestData
 import swynck.real.onedrive.client.OnedriveClientsImpl
@@ -46,11 +47,7 @@ object PopulateTestData {
         return callbackUrl
             .trim()
             .let(::URI)
-            .query
-            .split("&")
-            .map { it.split("=") }
-            .filter { it.size == 2 }
-            .single { it[0] == "code" }[1]
+            .queryMap()["code"]!!
     }
 }
 
@@ -82,8 +79,8 @@ class DeltaData(
                 accessToken = lazy { onedrive.getAccessToken(user) }
                 accessTokenLastRefresh = Instant.now()
             }
-            val deltaString = nextLinkUrlMap.get(nextLink) ?: getDelta(accessToken.value, nextLink)
-            val file = File(deltaFolder, "${UUID.randomUUID()}.json")
+            var cached = true
+            val deltaString = nextLinkUrlMap.get(nextLink) ?: getDelta(accessToken.value, nextLink).also { cached = false }
             val payload = DeltaRequestAndResponse(
                 nextLink,
                 deltaString
@@ -92,7 +89,10 @@ class DeltaData(
             files += delta.value.filter { it.file != null }.map { it.name }
             folders += delta.value.filter { it.folder != null }.map { it.name }
             batches++
-            println("Populated $batches batches ${files.size} files and ${folders.size} folders")
+            println("Populated $batches batches ${files.size} files and ${folders.size} folders ${if (cached) "CACHED" else ""}")
+            if (!nextLinkUrlMap.contains(nextLink)) {
+                File(deltaFolder, "${UUID.randomUUID()}.json").writeText(Json.asJsonString(payload))
+            }
             if (nextLink == delta.nextLink) {
                 println("Next link has not changed")
                 break
@@ -102,7 +102,6 @@ class DeltaData(
                 println("Delta link is ${delta.deltaLink}")
                 break
             }
-            if (!nextLinkUrlMap.contains(nextLink)) file.writeText(Json.asJsonString(payload))
             nextLink = delta.nextLink
         }
     }

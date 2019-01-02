@@ -35,10 +35,6 @@ class FileDetailsSyncTests {
                     .executeAndFetch<Int>()
                     .single()
                 println("File count is $fileCount")
-                if (fileCount > 1000) {
-                    println("File count is large. Exiting.")
-                    return
-                }
             }
         }
     }

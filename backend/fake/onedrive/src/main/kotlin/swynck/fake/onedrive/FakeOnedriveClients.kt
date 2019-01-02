@@ -4,17 +4,20 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
-import org.http4k.core.Status.Companion.NOT_IMPLEMENTED
+import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNAUTHORIZED
 import org.http4k.routing.bind
 import org.http4k.routing.routes
+import swynck.common.extensions.queryMap
 import swynck.fake.onedrive.testdata.FakeOnedriveTestData
 import swynck.real.onedrive.client.OnedriveClients
 import swynck.real.onedrive.dto.AccessToken
+import swynck.real.onedrive.dto.DeltaResponse
 import swynck.real.onedrive.dto.DriveResource
 import swynck.real.onedrive.dto.DriveResource.Companion.IdentitySetResource
 import swynck.real.onedrive.dto.DriveResource.Companion.IdentitySetResource.Companion.IdentityResource
+import java.net.URI
 import java.util.*
 
 class FakeOnedriveClients : OnedriveClients {
@@ -29,7 +32,7 @@ class FakeOnedriveClients : OnedriveClients {
     )
 
     private fun handleAuth(request: Request): Response {
-        val bodyMap = request.bodyString().split("&").map { it.split("=") }.map { it[0] to it[1] }.toMap()
+        val bodyMap = request.bodyString().queryMap()
         if (bodyMap["code"] != authCode && bodyMap["refresh_token"] != currentAccessToken.refresh_token) return Response(UNAUTHORIZED)
         return Response(OK).withBody(currentAccessToken)
     }
@@ -45,7 +48,8 @@ class FakeOnedriveClients : OnedriveClients {
         .inject(accessToken, this)
 
     private fun getDelta(request: Request): Response {
-        TODO()
+        val delta = fakeOnedriveTestData.getDelta(URI(request.uri.toString())) ?: return Response(NOT_FOUND)
+        return Response(OK).withBody(delta)
     }
 
     private fun getUser(request: Request): Response {
@@ -63,4 +67,8 @@ class FakeOnedriveClients : OnedriveClients {
     private fun Response.withBody(resource: DriveResource) = DriveResource
         .lens
         .inject(resource, this)
+
+    private fun Response.withBody(delta: DeltaResponse) = DeltaResponse
+        .lens
+        .inject(delta, this)
 }
