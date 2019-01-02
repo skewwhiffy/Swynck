@@ -16,6 +16,7 @@ class FakeOnedriveTestData {
         deltaDataFolder
             .also { if (!it.exists()) throw Exception("Delta data folder does not exist")  }
             .listFiles()
+            .asSequence()
             .map { it.readText() }
             .map { Json.asA(it, DeltaResponse::class) }
             .firstOrNull { it.deltaLink != null }
