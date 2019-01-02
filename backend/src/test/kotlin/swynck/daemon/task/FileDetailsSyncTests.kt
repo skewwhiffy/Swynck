@@ -1,6 +1,7 @@
 package swynck.daemon.task
 
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import swynck.common.model.User
 import swynck.test.utils.TestDependencies
@@ -21,6 +22,7 @@ class FileDetailsSyncTests {
     fun `folders are populated`() {
         while (!dependencies.onedriveClients.hasDeltaLinkBeenRequested) {
             runBlocking { sut.runSingle() }
+            assertThat(sut.exceptions).isEmpty()
             dependencies.dataSourceFactory.sql2o().use {
                 val fileCount = "SELECT COUNT(*) FROM files"
                     .let(it::createQuery)

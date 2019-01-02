@@ -51,7 +51,7 @@ class FakeOnedriveClients : OnedriveClients {
 
     private fun getDelta(request: Request): Response {
         fakeOnedriveTestData.getDelta(URI(request.uri.toString()))?.let { return Response(OK).withBody(it) }
-        val deltaLink = fakeOnedriveTestData.getDeltaLink() ?: return Response(NOT_FOUND)
+        val deltaLink = fakeOnedriveTestData.deltaLink ?: return Response(NOT_FOUND)
         if (deltaLink.queryMap()["token"] != request.uri.query.queryMap()["token"]) return Response(NOT_FOUND)
         deltaLinkRequested = true
         return DeltaResponse(
