@@ -4,21 +4,19 @@ import org.http4k.core.Body
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import swynck.app.Dependencies
-import swynck.config.Json.auto
+import swynck.common.Json.auto
+import swynck.common.defaultRedirectUri
 import java.net.URI
 
 object GetCurrentUser {
     operator fun invoke(
         dependencies: Dependencies
-    ) = dependencies
-        .userRepository
-        .getUser()
-        .let {
-            when (it) {
-                null -> Response(OK).withBody(UserNotFound(dependencies.oneDrive.authenticationUrl()))
-                else -> Response(OK).withBody(UserFound(it.displayName))
-            }
-        }
+    ): Response {
+        val user = dependencies.userRepository.getUser()
+        val response = user?.displayName?.let(::UserFound)
+        ?: dependencies.config.defaultRedirectUri().let(dependencies.oneDrive::authenticationUrl).let(::UserNotFound)
+        return Response(OK).withBody(response)
+    }
 }
 
 abstract class UserResponse

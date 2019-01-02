@@ -5,7 +5,8 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.ACCEPTED
 import swynck.app.Dependencies
-import swynck.config.Json.auto
+import swynck.common.Json.auto
+import swynck.common.defaultRedirectUri
 
 object OnedriveCallback {
     operator fun invoke(
@@ -13,8 +14,8 @@ object OnedriveCallback {
         request: Request
     ): Response {
         val requestDeserialized = OnedriveCallbackRequest(request)
-        val accessToken = dependencies.oneDrive.getAccessToken(requestDeserialized.authCode)
-        val userDetails = dependencies.oneDrive.getUser(accessToken)
+        val accessToken = dependencies.oneDrive.getAccessToken(requestDeserialized.authCode, dependencies.config.defaultRedirectUri())
+        val userDetails = dependencies.oneDrive.getUser(accessToken, dependencies.config.defaultRedirectUri())
         dependencies.userRepository.addUser(userDetails)
         return Response(ACCEPTED)
     }

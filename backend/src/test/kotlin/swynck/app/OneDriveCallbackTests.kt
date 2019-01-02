@@ -9,11 +9,13 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.ACCEPTED
 import org.junit.Test
 import swynck.app.api.Api
-import swynck.model.User
-import swynck.service.AccessToken
-import swynck.service.Onedrive
+import swynck.common.defaultRedirectUri
+import swynck.common.model.User
+import swynck.real.onedrive.client.OnedriveWrapper
+import swynck.real.onedrive.dto.AccessToken
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.with
+import java.net.URI
 import java.util.*
 
 class OneDriveCallbackTests {
@@ -27,21 +29,19 @@ class OneDriveCallbackTests {
         )
         val id = "${UUID.randomUUID()}"
         val displayName = "${UUID.randomUUID()}"
-        val oneDrive = mockk<Onedrive>()
+        val oneDrive = mockk<OnedriveWrapper>()
         val dependencies = TestDependencies().with(oneDrive)
         val api = Api(dependencies)
-        val redirectUri = "${UUID.randomUUID()}.com"
-        every { oneDrive.getAccessToken(authCode) } returns accessToken
-        every { oneDrive.getUser(accessToken) } returns
-            User(id, displayName, redirectUri, accessToken.refresh_token)
+        val redirectUri = dependencies.config.defaultRedirectUri()
+        every { oneDrive.getAccessToken(authCode, redirectUri) } returns accessToken
+        every { oneDrive.getUser(accessToken, redirectUri) } returns
+            User(id, displayName, redirectUri.toString(), accessToken.refresh_token)
 
-        val response = """
-            {"authCode":"$authCode"}
-        """.trimIndent()
+        val response = """{"authCode":"$authCode"}"""
             .let { Request(POST, "/onedrive/authcode").body(it) }
             .let { api(it) }
 
-        verify { oneDrive.getAccessToken(authCode) }
+        verify { oneDrive.getAccessToken(authCode, redirectUri) }
         val user = dependencies.userRepository.getUser() ?: throw AssertionError("Expected user entry")
         assertThat(user.refreshToken).isEqualTo(accessToken.refresh_token)
         assertThat(user.displayName).isEqualTo(displayName)

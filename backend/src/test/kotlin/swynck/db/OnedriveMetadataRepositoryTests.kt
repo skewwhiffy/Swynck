@@ -2,7 +2,7 @@ package swynck.db
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import swynck.dto.onedrive.*
+import swynck.real.onedrive.dto.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import java.util.*

@@ -5,9 +5,7 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
-import swynck.dto.onedrive.DeltaResponse
-import swynck.dto.onedrive.DriveItem
-import swynck.dto.onedrive.FileItem
+import swynck.real.onedrive.dto.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference

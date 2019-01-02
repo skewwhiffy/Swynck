@@ -8,7 +8,7 @@ import org.http4k.core.Status.Companion.OK
 import swynck.app.Dependencies
 import swynck.app.api.dto.FileDto
 import swynck.app.api.dto.toDto
-import swynck.config.Json.auto
+import swynck.common.Json.auto
 import swynck.db.OnedriveMetadataRepository
 
 object GetMusic {

@@ -1,8 +1,7 @@
 package swynck.daemon.task
 
-import kotlinx.coroutines.delay
 import swynck.app.Dependencies
-import swynck.model.User
+import swynck.common.model.User
 import java.time.Duration
 
 class FileDetailsSync(
@@ -12,7 +11,6 @@ class FileDetailsSync(
     companion object {
         private val updatingDelay = Duration.ofSeconds(1)!!
         private val pollingInterval = Duration.ofSeconds(15)!!
-        private suspend fun delay(duration: Duration) = delay(duration.toMillis())
     }
 
     override suspend fun runSingle() {
@@ -24,18 +22,19 @@ class FileDetailsSync(
             dependencies.metadata.insert(delta)
             delta.nextLink?.let {
                 dependencies.userRepository.setNextLink(user, it)
+                // TODO: Logging
                 println("Next link returned: $it")
-                delay(updatingDelay)
+                dependencies.ticker.delay(updatingDelay)
             }
             delta.deltaLink?.let {
                 dependencies.userRepository.setNextLink(user, it)
                 println("Delta link returned: $it")
-                delay(pollingInterval)
+                dependencies.ticker.delay(pollingInterval)
             }
         } catch (e: Exception) {
             println(e)
             e.printStackTrace()
-            delay(pollingInterval)
+            dependencies.ticker.delay(pollingInterval)
         }
     }
 

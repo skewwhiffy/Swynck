@@ -1,12 +1,16 @@
 package swynck.app
 
-import swynck.config.Config
+import swynck.common.Config
+import swynck.common.time.Ticker
 import swynck.daemon.DaemonRunner
 import swynck.db.DataSourceFactory
 import swynck.db.OnedriveMetadataRepository
 import swynck.db.UserRepository
-import swynck.service.Onedrive
+import swynck.real.onedrive.client.OnedriveClients
+import swynck.real.onedrive.client.OnedriveClientsImpl
+import swynck.real.onedrive.client.OnedriveWrapper
 
+// TODO: Proper IoC container
 interface Dependencies {
     companion object {
         operator fun invoke() = DependenciesImpl()
@@ -15,7 +19,9 @@ interface Dependencies {
     val dataSourceFactory: DataSourceFactory
     val daemonRunner: DaemonRunner
     val metadata: OnedriveMetadataRepository
-    val oneDrive: Onedrive
+    val ticker: Ticker
+    val onedriveClients: OnedriveClients
+    val oneDrive: OnedriveWrapper
     val userRepository: UserRepository
 }
 
@@ -25,6 +31,8 @@ class DependenciesImpl(
 ): Dependencies {
     override val dataSourceFactory = DataSourceFactory(config)
     override val metadata = OnedriveMetadataRepository(dataSourceFactory)
-    override val oneDrive = Onedrive(config)
+    override val ticker = Ticker()
+    override val onedriveClients = OnedriveClientsImpl()
+    override val oneDrive = OnedriveWrapper(onedriveClients, config)
     override val userRepository = UserRepository(dataSourceFactory)
 }

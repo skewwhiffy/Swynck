@@ -1,6 +1,6 @@
 package swynck.db
 
-import swynck.model.User
+import swynck.common.model.User
 import swynck.util.executeAndFetch
 import java.net.URI
 

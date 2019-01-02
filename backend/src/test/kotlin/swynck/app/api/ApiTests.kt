@@ -6,7 +6,7 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
 import swynck.app.api.items.GetItemsResponse
-import swynck.dto.onedrive.*
+import swynck.real.onedrive.dto.*
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference

@@ -35,4 +35,4 @@ repositories {
 
 build.dependsOn(buildFrontend)
 build.dependsOn('backend:build')
-build.dependsOn('fake:onedrive:build')
+build.dependsOn('backend:fake:onedrive:build')

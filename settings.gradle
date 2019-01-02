@@ -1,4 +1,6 @@
 rootProject.name = 'Swynck'
 include 'backend'
-include 'fake:onedrive'
-
+include 'backend:common'
+include 'backend:fake:onedrive'
+include 'backend:real:onedrive'
+include 'backend:test'
