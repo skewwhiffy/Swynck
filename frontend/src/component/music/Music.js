@@ -27,7 +27,14 @@ export default class Music extends Component {
 
     render() {
         return <div>
-            {this.state.files.map(it => <File key={it.name} file={it}/>)}
+            <div>
+                <audio controls>
+                    <source src="hello.mpg" type="audio/mpeg"/>
+                </audio>
+            </div>
+            <div>
+                {this.state.files.map(it => <File key={it.name} file={it}/>)}
+            </div>
         </div>
     }
 }
