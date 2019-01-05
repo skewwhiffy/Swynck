@@ -24,8 +24,8 @@ ext {
     dep_mockk = 'io.mockk:mockk:1.8.13'
 }
 
-task buildFrontend(type: Exec) {
-    workingDir 'frontend'
+task buildFrontendReact(type: Exec) {
+    workingDir 'frontend.react'
     commandLine 'sh', 'build.sh'
 }
 
@@ -33,6 +33,6 @@ repositories {
     mavenCentral()
 }
 
-build.dependsOn(buildFrontend)
+build.dependsOn(buildFrontendReact)
 build.dependsOn('backend:build')
 build.dependsOn('backend:fake:onedrive:build')
