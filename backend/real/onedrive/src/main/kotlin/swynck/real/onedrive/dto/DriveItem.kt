@@ -1,27 +1,27 @@
 package swynck.real.onedrive.dto
 
 data class DriveItem(
-        val id: String,
-        val name: String,
-        val file: FileItem?,
-        val folder: FolderItem?,
-        val `package`: PackageItem?,
-        val parentReference: ParentReference
+    val id: String,
+    val name: String,
+    val file: FileItem?,
+    val folder: FolderItem?,
+    val `package`: PackageItem?,
+    val parentReference: ParentReference
 )
 
 data class FileItem(
-        val mimeType: String
+    val mimeType: String?
 )
 
 data class FolderItem(
-        val childCount: Int
+    val childCount: Int
 )
 
 data class PackageItem(
-        val type: String
+    val type: String
 )
 
 data class ParentReference(
-        val driveId: String,
-        val id: String
+    val driveId: String,
+    val id: String
 )

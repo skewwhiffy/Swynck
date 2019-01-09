@@ -143,7 +143,7 @@ private data class FileDao(
     val id: Int,
     val userId: String,
     val name: String,
-    val mimeType: String,
+    val mimeType: String?,
     val folder: Int
 )
 
@@ -155,5 +155,5 @@ data class Folder(
 data class File(
     val id: Int,
     val name: String,
-    val mimeType: String
+    val mimeType: String?
 )

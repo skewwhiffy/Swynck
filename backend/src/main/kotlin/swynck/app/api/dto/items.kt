@@ -10,7 +10,7 @@ data class FolderDto(
 data class FileDto(
     val id: Int,
     val name: String,
-    val mime: String
+    val mime: String?
 )
 
 fun Folder.toDto() = FolderDto(name)
