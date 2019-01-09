@@ -29,11 +29,6 @@ task buildFrontend(type: Exec) {
     commandLine 'sh', 'build.sh'
 }
 
-task buildFrontendReact(type: Exec) {
-    workingDir 'frontend.react'
-    commandLine 'sh', 'build.sh'
-}
-
 repositories {
     mavenCentral()
 }

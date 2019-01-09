@@ -1,6 +1,13 @@
 <template>
   <div>
-    <File :key="file.name" v-for="file in files" :file="file"/>
+    <div>
+      <audio controls>
+        <source src="hello.mpg" type="audio/mpeg"/>
+      </audio>
+    </div>
+    <div>
+      <File :key="file.name" v-for="file in files" :file="file"/>
+    </div>
   </div>
 </template>
 

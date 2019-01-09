@@ -1,7 +1,7 @@
 <template>
   <div>
     <p v-if="loggedIn">{{loggedIn}}</p>
-    <p v-if="loginRedirect">Login</p>
+    <a v-if="loginRedirect" :href="loginRedirect">Login</a>
   </div>
 </template>
 

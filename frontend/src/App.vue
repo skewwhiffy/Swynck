@@ -34,7 +34,7 @@ export default {
   max-width: 1000px;
   margin: auto;
 }
-.nav-tabs {
+.tabs {
   margin-top: 15px;
 }
 </style>
