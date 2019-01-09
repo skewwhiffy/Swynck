@@ -4,7 +4,7 @@
     <div class="content">
       <b-tabs>
         <b-tab title="Files" active>
-          <br>FILES
+          <Items></Items>
         </b-tab>
         <b-tab title="Music">
           <br>MUSIC
@@ -16,11 +16,13 @@
 
 <script>
 import HeaderBar from './components/HeaderBar.vue';
+import Items from './components/items/Items.vue';
 
 export default {
   name: 'app',
   components: {
-    HeaderBar
+    HeaderBar,
+    Items
   }
 }
 </script>

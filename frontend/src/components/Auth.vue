@@ -7,17 +7,18 @@
 
 <script>
 import Api from '../service/Api';
+
 const api = new Api();
 
 export default {
   name: 'auth',
-  data: function() {
+  data() {
     return {
       loginRedirect: false,
       loggedIn: false
     }
   }, 
-  created: function() {
+  created() {
     const code = (new URL(window.location)).searchParams.get("code");
     if (code) {
       api
