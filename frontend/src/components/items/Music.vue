@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <audio controls>
+      <audio v-if="false" controls>
         <source src="hello.mpg" type="audio/mpeg"/>
       </audio>
     </div>
