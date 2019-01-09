@@ -4,10 +4,10 @@
     <div class="content">
       <b-tabs>
         <b-tab title="Files" active>
-          <Items></Items>
+          <Items/>
         </b-tab>
         <b-tab title="Music">
-          <br>MUSIC
+          <Music/>
         </b-tab>
       </b-tabs>
     </div>
@@ -17,12 +17,14 @@
 <script>
 import HeaderBar from './components/HeaderBar.vue';
 import Items from './components/items/Items.vue';
+import Music from './components/items/Music.vue';
 
 export default {
   name: 'app',
   components: {
     HeaderBar,
-    Items
+    Items,
+    Music
   }
 }
 </script>
