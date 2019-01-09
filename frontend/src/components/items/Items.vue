@@ -1,7 +1,7 @@
 <template>
   <div>
-    <Folder :key="folder.name" v-for="folder in folders" :folder="folder"></Folder>
-    <File :key="file.name" v-for="file in files" :file="file"></File>
+    <Folder :key="getKeyFromName(folder.name)" v-for="folder in folders" :folder="folder"></Folder>
+    <File :key="getKeyFromName(file.name)" v-for="file in files" :file="file"></File>
   </div>
 </template>
 
@@ -9,6 +9,7 @@
 import Api from '../../service/Api.js';
 import Folder from './Folder.vue';
 import File from './File.vue';
+import md5 from 'md5';
 
 const api = new Api();
 
@@ -33,7 +34,8 @@ export default {
           this.files = it.files.sort(nameCompare);
           this.folders = it.folders.sort(nameCompare);
         });
-    }
+    },
+    getKeyFromName: md5
   },
   components: {
     Folder,

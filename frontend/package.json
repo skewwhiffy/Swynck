@@ -10,6 +10,7 @@
   "dependencies": {
     "bootstrap": "^4.2.1",
     "bootstrap-vue": "^2.0.0-rc.11",
+    "md5": "^2.2.1",
     "moment": "^2.23.0",
     "url-join": "^4.0.0",
     "vue": "^2.5.21",

@@ -6,7 +6,7 @@
       </audio>
     </div>
     <div>
-      <File :key="file.name" v-for="file in files" :file="file"/>
+      <File :key="getKeyFromName(file.name)" v-for="file in files" :file="file"/>
     </div>
   </div>
 </template>
@@ -14,6 +14,7 @@
 <script>
 import Api from '../../service/Api.js';
 import File from './File.vue';
+import md5 from 'md5';
 
 const api = new Api();
 
@@ -35,7 +36,8 @@ export default {
       api
         .searchMusic()
         .then(it => this.files = it.files)
-    }
+    },
+    getKeyFromName: md5
   }
 }
 </script>
