@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Breadcrumbs :path-sections="pwd"/>
     <Folder :key="getKeyFromName(folder.name)" v-for="folder in folders" :folder="folder"></Folder>
     <File :key="getKeyFromName(file.name)" v-for="file in files" :file="file"></File>
   </div>
@@ -7,6 +8,7 @@
 
 <script>
 import Api from '../../service/Api.js';
+import Breadcrumbs from './Breadcrumbs.vue';
 import Folder from './Folder.vue';
 import File from './File.vue';
 import md5 from 'md5';
@@ -20,6 +22,7 @@ export default {
   },
   data() {
     return {
+      pwd: [],
       folders: [],
       files: []
     };
@@ -38,6 +41,7 @@ export default {
     getKeyFromName: md5
   },
   components: {
+    Breadcrumbs,
     Folder,
     File
   }
