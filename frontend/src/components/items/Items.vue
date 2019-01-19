@@ -1,7 +1,12 @@
 <template>
   <div>
     <Breadcrumbs :path-sections="pwd"/>
-    <Folder :key="getKeyFromName(folder.name)" v-for="folder in folders" :folder="folder"></Folder>
+    <Folder
+      :key="getKeyFromName(folder.name)"
+      v-for="folder in folders"
+      :folder="folder"
+      @change="folderChange"
+    ></Folder>
     <File :key="getKeyFromName(file.name)" v-for="file in files" :file="file"></File>
   </div>
 </template>
@@ -28,11 +33,17 @@ export default {
     };
   },
   methods: {
+    folderChange(args) {
+      this.pwd.push(args.name);
+      this.folders = [];
+      this.files = [];
+      this.refreshFiles();
+    },
     refreshFiles() {
       const compare = (a, b) => (a > b) ? 1 : (a === b) ? 0 : -1;
       const nameCompare = (a, b) => compare(a.name.toLowerCase(), b.name.toLowerCase());
       api
-        .getItems()
+        .getItems(this.pwd)
         .then(it => {
           this.files = it.files.sort(nameCompare);
           this.folders = it.folders.sort(nameCompare);

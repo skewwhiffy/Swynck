@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>FOLDER: {{folder.name}}</p>
+    <a href="#" @click="selectFolder">FOLDER: {{folder.name}}</a>
   </div>
 </template>
 
@@ -9,6 +9,11 @@ export default {
   props: {
     folder: Object
   },
-  name: 'folder'
+  name: 'folder',
+  methods: {
+    selectFolder() {
+      this.$emit('change', this.folder);
+    }
+  }
 }
 </script>

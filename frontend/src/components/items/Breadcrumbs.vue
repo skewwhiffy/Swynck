@@ -1,5 +1,15 @@
 <template>
-  <p>Breadcrumbs {{ pathSections }}!!</p>
+  <div>
+    <p>Breadcrumbs</p>
+    <ul>
+      <li
+        :key="index"
+        v-for="(pathSection, index) in pathSections"
+      >
+        {{ pathSection }}
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script>
