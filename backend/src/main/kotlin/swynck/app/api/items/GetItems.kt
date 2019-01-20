@@ -16,9 +16,9 @@ object GetItems {
         path: List<String>
     ): Response {
         val currentUser = dependencies.userRepository.getUser() ?: return Response(FORBIDDEN)
-        val rootFolder = dependencies.metadata.getRootFolder(currentUser)
-        val folders = dependencies.metadata.getFolders(currentUser, rootFolder)
-        val files = dependencies.metadata.getFiles(currentUser, rootFolder)
+        val containingFolder = dependencies.metadata.getFolder(currentUser, path)
+        val folders = dependencies.metadata.getFolders(currentUser, containingFolder)
+        val files = dependencies.metadata.getFiles(currentUser, containingFolder)
         val response = GetItemsResponse(
             folders.map { it.toDto() },
             files.map { it.toDto() }

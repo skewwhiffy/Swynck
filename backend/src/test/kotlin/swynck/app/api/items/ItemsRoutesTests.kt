@@ -1,25 +1,20 @@
 package swynck.app.api.items
 
 import org.assertj.core.api.Assertions.assertThat
-import org.http4k.core.Method
-import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Test
-import swynck.real.onedrive.dto.*
+import swynck.real.onedrive.dto.DeltaResponse
+import swynck.real.onedrive.dto.DriveItem
+import swynck.real.onedrive.dto.FileItem
+import swynck.real.onedrive.dto.FolderItem
 import swynck.test.utils.TestData
 import swynck.test.utils.TestDependencies
 import swynck.test.utils.asParentReference
-import swynck.test.utils.hasPingEndpoint
 
 class ItemsRoutesTests {
     private val testData = TestData()
     private val dependencies = TestDependencies()
     private val itemRoutes = ItemsRoutes(dependencies)
-
-    @Test
-    fun `ping endpoint works`() {
-        assertThat(itemRoutes).hasPingEndpoint()
-    }
 
     @Test
     fun `get items returns files`() {
@@ -42,7 +37,7 @@ class ItemsRoutesTests {
         )
         dependencies.metadata.insert(deltaResponse)
 
-        val result = itemRoutes(Request(Method.GET, "/"))
+        val result = itemRoutes(listOf())
 
         assertThat(result.status).isEqualTo(OK)
         val deserializedResponse = GetItemsResponse.lens(result)
@@ -81,11 +76,9 @@ class ItemsRoutesTests {
             folders + files
         )
         dependencies.metadata.insert(deltaResponse)
-        val path = folderNames
-            .subList(0, folderNames.size - 1)
-            .joinToString("/")
+        val path = folderNames.subList(0, folderNames.size - 1)
 
-        val result = itemRoutes(Request(Method.GET, path))
+        val result = itemRoutes(path)
 
         assertThat(result.status).isEqualTo(OK)
         val deserializedResponse = GetItemsResponse.lens(result)

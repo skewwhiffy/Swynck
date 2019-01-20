@@ -39,16 +39,21 @@ MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :user
         }
     }
 
-    fun getRootFolder(user: User) = dataSourceFactory
-        .sql2o()
-        .use {
-            "SELECT * FROM folders WHERE userId = :userId AND parentFolder IS NULL"
-                .let(it::createQuery)
-                .addParameter("userId", user.id)
-                .executeAndFetch<FolderDao>()
-                .single()
+    fun getFolder(user: User,  path: List<String>): Folder {
+        if (path.isEmpty()) {
+            return dataSourceFactory
+                .sql2o()
+                .use {
+                    "SELECT * FROM folders WHERE userId = :userId AND parentFolder IS NULL"
+                        .let(it::createQuery)
+                        .addParameter("userId", user.id)
+                        .executeAndFetch<FolderDao>()
+                        .single()
+                }
+                .let { Folder(it.id, it.name) }
         }
-        .let { Folder(it.id, it.name) }
+        TODO()
+    }
 
     fun getFolders(user: User, parentFolder: Folder) = dataSourceFactory
         .sql2o()

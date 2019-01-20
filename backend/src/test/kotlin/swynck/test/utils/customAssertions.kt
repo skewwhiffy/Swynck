@@ -7,8 +7,8 @@ import org.http4k.core.Request
 import org.http4k.core.Status
 
 fun <T: HttpHandler> ObjectAssert<T>.hasPingEndpoint(route: String = "/ping") {
-    matches {
+    matches( {
         val result = it(Request(GET, route))
         result.status == Status.OK && result.bodyString() == "pong"
-    }
+    }, "/ping endpoint does not exist")
 }
