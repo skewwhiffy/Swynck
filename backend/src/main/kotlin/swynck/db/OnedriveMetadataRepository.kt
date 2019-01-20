@@ -40,23 +40,13 @@ MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :user
     }
 
     fun getFolder(user: User,  path: List<String>): Folder? {
-        if (path.isEmpty()) {
-            return dataSourceFactory
-                .sql2o()
-                .use {
-                    "SELECT * FROM folders WHERE userId = :userId AND parentFolder IS NULL"
-                        .let(it::createQuery)
-                        .addParameter("userId", user.id)
-                        .executeAndFetch<FolderDao>()
-                        .single()
-                }
-                .let { Folder(it.id, it.name) }
-        }
         val query = listOf(
             "SELECT f${path.size}.* FROM folders f0",
             *path.mapIndexed { i, _ -> "JOIN folders f${i + 1} ON f${i + 1}.parentFolder = f$i.id" }.toTypedArray(),
             "WHERE f0.parentFolder IS NULL",
-            *path.mapIndexed { i, _ -> "AND f${i + 1}.name = :f${i + 1}" }.toTypedArray()
+            "AND f0.userId = :userId",
+            *path.mapIndexed { i, _ -> "AND f${i + 1}.name = :f${i + 1}" }.toTypedArray(),
+            *path.mapIndexed { i, _ -> "AND f${i + 1}.userId = :userId" }.toTypedArray()
         )
             .joinToString(" ")
         return dataSourceFactory
@@ -64,6 +54,7 @@ MERGE INTO files (id, userId, name, mimeType, folder) KEY(id) VALUES (:id, :user
             .use {
                 path
                     .foldIndexed(it.createQuery(query)) { i, c, p -> c.addParameter("f${i + 1}", p) }
+                    .addParameter("userId", user.id)
                     .executeAndFetch<FolderDao>()
                     .singleOrNull()
             }
