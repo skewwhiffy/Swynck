@@ -57,7 +57,7 @@ class OnedriveMetadataRepositoryTests {
         metadataRepository.insert(delta)
         metadataRepository.insert(secondDelta)
 
-        val rootFolder = metadataRepository.getFolder(user, listOf())
+        val rootFolder = metadataRepository.getFolder(user, listOf())!!
         val folder = metadataRepository.getFolders(user, rootFolder).single()
         assertThat(folder).isEqualTo(Folder(childId, newChildFolder.name))
     }
@@ -72,7 +72,7 @@ class OnedriveMetadataRepositoryTests {
 
         metadataRepository.insert(delta)
 
-        val rootFolderReturned = metadataRepository.getFolder(user, listOf())
+        val rootFolderReturned = metadataRepository.getFolder(user, listOf())!!
         val childFoldersReturned = metadataRepository.getFolders(user, rootFolderReturned)
         assertThat(childFoldersReturned.map { it.name }.sorted()).isEqualTo(childFolders.map { it.name }.sorted())
     }
@@ -93,7 +93,7 @@ class OnedriveMetadataRepositoryTests {
 
         metadataRepository.insert(delta)
 
-        val rootFolderReturned = metadataRepository.getFolder(user, listOf())
+        val rootFolderReturned = metadataRepository.getFolder(user, listOf())!!
         fun getChildFoldersReturned(prev: List<Folder> = listOf()): List<Folder> = metadataRepository
             .getFolders(user, prev.lastOrNull() ?: rootFolderReturned)
             .singleOrNull()
@@ -110,7 +110,7 @@ class OnedriveMetadataRepositoryTests {
 
         metadataRepository.insert(delta)
 
-        val rootFolderReturned = metadataRepository.getFolder(user, listOf())
+        val rootFolderReturned = metadataRepository.getFolder(user, listOf())!!
         val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
         assertThat(fileReturned).isEqualTo(File(file.id.split("!")[1].toInt(), file.name, file.file!!.mimeType))
     }
@@ -127,7 +127,7 @@ class OnedriveMetadataRepositoryTests {
         metadataRepository.insert(delta)
         metadataRepository.insert(secondDelta)
 
-        val rootFolderReturned = metadataRepository.getFolder(user, listOf())
+        val rootFolderReturned = metadataRepository.getFolder(user, listOf())!!
         val fileReturned = metadataRepository.getFiles(user, rootFolderReturned).single()
         assertThat(fileReturned).isEqualTo(File(fileId, newFile.name, newFile.file!!.mimeType))
     }
