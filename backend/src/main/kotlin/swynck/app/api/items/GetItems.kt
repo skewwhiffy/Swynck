@@ -11,7 +11,10 @@ import swynck.app.api.dto.toDto
 import swynck.common.Json.auto
 
 object GetItems {
-    operator fun invoke(dependencies: Dependencies): Response {
+    operator fun invoke(
+        dependencies: Dependencies,
+        path: List<String>
+    ): Response {
         val currentUser = dependencies.userRepository.getUser() ?: return Response(FORBIDDEN)
         val rootFolder = dependencies.metadata.getRootFolder(currentUser)
         val folders = dependencies.metadata.getFolders(currentUser, rootFolder)

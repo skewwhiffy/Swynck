@@ -24,8 +24,7 @@ class ItemsRoutesTests {
     @Test
     fun `get items returns files`() {
         dependencies.userRepository.addUser(testData.user)
-        val filenames = (0..10)
-            .map { TestData.randomString() }
+        val filenames = (0..10).map { TestData.randomString() }
         val files = filenames
             .map { DriveItem(
                 testData.onedrive.randomDriveItemId(),
@@ -46,8 +45,51 @@ class ItemsRoutesTests {
         val result = itemRoutes(Request(Method.GET, "/"))
 
         assertThat(result.status).isEqualTo(OK)
-        println(result.bodyString())
         val deserializedResponse = GetItemsResponse.lens(result)
         assertThat(deserializedResponse.files.map { it.name }).isEqualTo(filenames)
+    }
+
+    @Test
+    fun `get items returns files is subfolder`() {
+        dependencies.userRepository.addUser(testData.user)
+        val folderNames = (0..10).map { TestData.randomString() }
+        val folders = folderNames
+            .fold(listOf<DriveItem>()) { c, name -> c + DriveItem(
+                testData.onedrive.randomDriveItemId(),
+                name,
+                null,
+                FolderItem(1),
+                null,
+                (c.lastOrNull()?:testData.onedrive.rootFolder).asParentReference()
+            )}
+            .toTypedArray()
+            .let { listOf(testData.onedrive.rootFolder, *it) }
+        val fileNames = (0..10).map { TestData.randomString() }
+        val containingFolder = folders[folders.size - 2]
+        val files = fileNames
+            .map { name -> DriveItem(
+                testData.onedrive.randomDriveItemId(),
+                name,
+                FileItem(null),
+                null,
+                null,
+                containingFolder.asParentReference()
+            )}
+        val deltaResponse = DeltaResponse(
+            null,
+            null,
+            folders + files
+        )
+        dependencies.metadata.insert(deltaResponse)
+        val path = folderNames
+            .subList(0, folderNames.size - 1)
+            .joinToString("/")
+
+        val result = itemRoutes(Request(Method.GET, path))
+
+        assertThat(result.status).isEqualTo(OK)
+        val deserializedResponse = GetItemsResponse.lens(result)
+        assertThat(deserializedResponse.files.map { it.name }).isEqualTo(fileNames)
+        assertThat(deserializedResponse.folders.map { it.name }).isEqualTo(listOf(folderNames.last()))
     }
 }
